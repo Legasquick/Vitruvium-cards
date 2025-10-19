@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конструктор карточек v4.8 (Final)</title>
+    <style>
+        /* --- ОБЩИЕ СТИЛИ --- */
+        :root {
+            --card-width: 63mm;
+            --card-height: 88mm;
+            --border-color: #000;
+            --accent-color: #007bff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Arial', sans-serif; background: #f0f0f0; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        
+        /* --- СПИСОК КАРТОЧЕК --- */
+        .cards-list { display: grid; grid-template-columns: repeat(auto-fill, var(--card-width)); gap: 15px; justify-content: center; }
+        .card-item { position: relative; }
+        
+        /* --- КАРТОЧКА-ДОБАВЛЯЛКА --- */
+        .card-adder {
+            width: var(--card-width); height: var(--card-height); border: 3px dashed #ccc;
+            border-radius: 5px; display: flex; justify-content: center; align-items: center;
+            font-size: 80px; color: #ccc; cursor: pointer; transition: all 0.3s;
+        }
+        .card-adder:hover { color: #aaa; border-color: #aaa; transform: scale(1.02); }
+
+        /* --- СТИЛИ КАРТОЧКИ --- */
+        .card {
+            border: 3px solid var(--border-color); /* Единая черная рамка */
+            width: var(--card-width); height: var(--card-height); display: flex; flex-direction: column;
+            user-select: none; transition: box-shadow 0.3s, border-color 0.3s;
+            overflow: hidden; 
+        }
+        .card:has([contenteditable="true"]:focus) { box-shadow: 0 0 10px 3px var(--accent-color); }
+        .card-header { 
+            color: white; padding: 12px; display: flex; align-items: center; gap: 10px; 
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .card-title, .card-subtitle { word-break: keep-all; overflow-wrap: normal; }
+        .card-title {
+            flex: 1; min-width: 0; font-size: 20px; font-weight: bold; text-transform: uppercase;
+            letter-spacing: 1.5px; line-height: 1.2; text-align: left;
+        }
+        .card-icon {
+            flex-shrink: 0; width: 40px; display: flex; justify-content: center; align-items: center;
+            font-size: 28px; cursor: pointer; transition: transform 0.3s; border-radius: 4px;
+        }
+        .card-icon:hover { transform: scale(1.1); background: rgba(255,255,255,0.1); }
+        .card-subtitle {
+            color: #E0E0E0; padding: 6px 12px; font-size: 12px; text-transform: uppercase;
+            letter-spacing: 1px; min-height: 18px; line-height: 1.2;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .card-content {
+            background: #FFFFFF;
+            padding: 15px; flex: 1; font-size: 10px; line-height: 1.5; color: var(--border-color); overflow: auto;
+        }
+        
+        /* --- СТИЛИ ДЛЯ РЕДАКТИРУЕМЫХ ЭЛЕМЕНТОВ --- */
+        [contenteditable="true"] { cursor: text; outline: none; }
+        [contenteditable="true"]:focus { background: rgba(0, 0, 0, 0.05); box-shadow: 0 0 0 2px var(--accent-color) inset; border-radius: 2px; }
+        [contenteditable="true"][data-placeholder]:empty::before { content: attr(data-placeholder); color: #888; pointer-events: none; font-style: italic; opacity: 0.8; }
+        [contenteditable="true"][data-placeholder]:empty:focus::before { content: ""; }
+
+        /* --- УПРАВЛЕНИЕ КАРТОЧКОЙ --- */
+        .card-controls { position: absolute; bottom: -25px; left: 0; right: 0; display: flex; justify-content: center; gap: 5px; opacity: 0; transition: all 0.3s; pointer-events: none; }
+        .card-item:hover .card-controls { opacity: 1; bottom: -10px; pointer-events: all; }
+        .card-controls button { padding: 4px 8px; font-size: 12px; font-weight: normal; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .copy-btn { background: #28a745; }
+        .delete-btn { background: #dc3545; }
+
+        /* --- МОДАЛЬНОЕ ОКНО ВЫБОРА ТИПА --- */
+        #iconModal {
+            position: absolute; display: none; z-index: 1000; background: white; border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 320px; padding: 15px; border: 1px solid #ccc;
+        }
+        #modalBackdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; display: none; }
+        #iconModal h3 { margin-top: 0; margin-bottom: 15px; text-align: center; }
+        .icon-selector { display: flex; flex-direction: column; gap: 10px; }
+        .icon-option {
+            display: flex; align-items: center; gap: 15px; padding: 10px;
+            border: 2px solid #ddd; border-radius: 4px; cursor: pointer; transition: all 0.2s;
+        }
+        .icon-option:hover { border-color: var(--border-color); background: #f5f5f5; }
+        .icon-emoji-box {
+            font-size: 28px; width: 50px; height: 40px; flex-shrink: 0;
+            display: flex; justify-content: center; align-items: center;
+            border: 2px solid #eee; border-radius: 4px; background: #fafafa;
+        }
+        .icon-label { font-size: 16px; font-weight: bold; }
+        
+        /* --- ОБЩИЕ КНОПКИ --- */
+        .global-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 50px; }
+        .global-buttons button { padding: 12px 24px; background: var(--border-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        
+        /* --- СТИЛИ ДЛЯ ПЕЧАТИ --- */
+        @media print {
+            body { background: white; padding: 0; margin: 0; }
+            .container { max-width: none; padding: 0; box-shadow: none; margin: 0; }
+            .global-buttons, h1, h2, .card-controls, .card-adder { display: none !important; }
+            .cards-list { display: grid; grid-template-columns: repeat(3, var(--card-width)); gap: 0; padding: 0; margin: 0; justify-content: center; }
+            .card-item { break-inside: avoid; page-break-inside: avoid; }
+            .card, .card-header, .card-subtitle, .card-content {
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            @page { size: A4 portrait; margin: 10mm; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 Конструктор игровых карточек</h1>
+        <h2>Созданные карточки (<span id="cardCount">0</span>):</h2>
+        <div id="cardsList" class="cards-list"></div>
+
+        <div class="global-buttons">
+            <button onclick="printCards()">🖨️ Печать</button>
+            <button onclick="saveJSON()">💾 Сохранить JSON</button>
+            <button onclick="loadJSON()">📂 Загрузить JSON</button>
+            <button onclick="clearAll()" style="background: #dc3545;">🗑️ Очистить всё</button>
+        </div>
+    </div>
+
+    <!-- Модальное окно -->
+    <div id="modalBackdrop"></div>
+    <div id="iconModal">
+        <h3>Выберите тип карточки</h3>
+        <div class="icon-selector" id="modalIconSelector"></div>
+    </div>
+
+    <input type="file" id="fileInput" accept=".json" style="display: none;">
+
+    <script>
+        // --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---
+        let cards = [];
+        const defaultIconTypes = [
+            { icon: '📦', type: 'Предмет' },
+            { icon: '⚡', type: 'Эффект' },
+            { icon: '🎭', type: 'Черта' },
+            { icon: '⭐', type: 'Способность' },
+            { icon: '🐾', type: 'Существо' }
+        ];
+        
+        const CARD_THEME_COLORS = {
+            'Предмет': { main: '#000000', sub: '#333333' },
+            'Эффект': { main: '#4B0082', sub: '#6A5ACD' },
+            'Черта': { main: '#006400', sub: '#2E8B57' },
+            'Способность': { main: '#AF9500', sub: '#D4AF37' },
+            'Существо': { main: '#8B0000', sub: '#A52A2A' }
+        };
+
+        let modalEditingIndex = null;
+        let ruler;
+
+        // --- DOM ЭЛЕМЕНТЫ ---
+        const cardsList = document.getElementById('cardsList');
+        const fileInput = document.getElementById('fileInput');
+        const cardCountEl = document.getElementById('cardCount');
+        const iconModal = document.getElementById('iconModal');
+        const modalBackdrop = document.getElementById('modalBackdrop');
+        const modalIconSelector = document.getElementById('modalIconSelector');
+
+        // --- ИНИЦИАЛИЗАЦИЯ ---
+        document.addEventListener('DOMContentLoaded', () => {
+            ruler = document.createElement('span');
+            ruler.style.position = 'absolute'; ruler.style.visibility = 'hidden'; ruler.style.whiteSpace = 'nowrap';
+            document.body.appendChild(ruler);
+            renderCardsList();
+            setupModalListeners();
+        });
+
+        // --- ГЕНЕРАЦИЯ HTML ---
+        function createCardHTML(cardData, index) {
+            const { title = '', icon = '📦', type = 'Предмет', subtitle = '', description = '' } = cardData;
+            const theme = CARD_THEME_COLORS[type] || CARD_THEME_COLORS['Предмет'];
+            const formattedDescription = description.replace(/\n/g, '<br>');
+            return `
+                <div class="card" data-index="${index}">
+                    <div class="card-header" style="background-color: ${theme.main}; border-bottom: 3px solid ${theme.main};">
+                        <div class="card-title" contenteditable="true" data-placeholder="[Название]">${title}</div>
+                        <div class="card-icon">${icon}</div>
+                    </div>
+                    <div class="card-subtitle" style="background-color: ${theme.sub}; border-bottom: 3px solid ${theme.main};" contenteditable="true" data-placeholder="[Подзаголовок]">${subtitle}</div>
+                    <div class="card-content" contenteditable="true" data-placeholder="[Описание...]">${formattedDescription}</div>
+                </div>
+                <div class="card-controls">
+                    <button class="copy-btn" onclick="copyCard(${index})">📋 Копировать</button>
+                    <button class="delete-btn" onclick="deleteCard(${index})">🗑️ Удалить</button>
+                </div>`;
+        }
+
+        // --- РЕНДЕРИНГ ---
+        function renderCardsList() {
+            const scrollY = window.scrollY;
+            cardsList.innerHTML = '';
+            cardCountEl.textContent = cards.length;
+
+            const adder = document.createElement('div');
+            adder.className = 'card-adder'; adder.textContent = '✚'; adder.title = 'Добавить новую карточку';
+            adder.onclick = addNewCard;
+            cardsList.appendChild(adder);
+
+            cards.forEach((card, index) => {
+                const cardItem = document.createElement('div');
+                cardItem.className = 'card-item';
+                cardItem.innerHTML = createCardHTML(card, index);
+                cardsList.appendChild(cardItem);
+                
+                adjustFontSize(cardItem.querySelector('.card-title'));
+                adjustFontSize(cardItem.querySelector('.card-subtitle'));
+            });
+
+            attachCardListeners();
+            window.scrollTo(0, scrollY);
+        }
+        
+        // --- CRUD ---
+        function addNewCard() {
+            const defaultType = defaultIconTypes[0];
+            const newCard = {
+                title: '', type: defaultType.type, icon: defaultType.icon,
+                subtitle: '', description: ''
+            };
+            cards.unshift(newCard);
+            renderCardsList();
+            const newCardTitleEl = cardsList.querySelector('.card[data-index="0"] .card-title');
+            if (newCardTitleEl) newCardTitleEl.focus();
+        }
+        
+        /**
+         * --- ИЗМЕНЕННАЯ ФУНКЦИЯ ---
+         * Удаляет карточку сразу, без диалогового окна.
+         */
+        function deleteCard(index) {
+            cards.splice(index, 1);
+            renderCardsList();
+        }
+        
+        function copyCard(index) {
+            const cardToCopy = JSON.parse(JSON.stringify(cards[index]));
+            cards.splice(index + 1, 0, cardToCopy);
+            renderCardsList();
+        }
+
+        // --- СИНХРОНИЗАЦИЯ С DOM ---
+        function updateCardDataFromDOM(element) {
+            const cardEl = element.closest('.card');
+            if (!cardEl) return;
+            const index = parseInt(cardEl.dataset.index, 10);
+            if (isNaN(index) || !cards[index]) return;
+            const title = cardEl.querySelector('.card-title').textContent.trim();
+            const subtitle = cardEl.querySelector('.card-subtitle').textContent.trim();
+            const descriptionHTML = cardEl.querySelector('.card-content').innerHTML;
+            const description = descriptionHTML
+                .replace(/<br\s*[\/]?>/gi, "\n").replace(/<div>/gi, "\n")
+                .replace(/<\/div>/gi, "").replace(/&nbsp;/g, " ")
+                .replace(/<[^>]*>/g, '').trim();
+            
+            cards[index].title = title;
+            cards[index].subtitle = subtitle;
+            cards[index].description = description;
+            cardCountEl.textContent = cards.length;
+        }
+        
+        // --- СЛУШАТЕЛИ ---
+        function attachCardListeners() {
+            document.querySelectorAll('.card[data-index]').forEach(cardEl => {
+                cardEl.querySelector('.card-icon').addEventListener('click', (e) => {
+                    openIconModal(e.currentTarget, parseInt(cardEl.dataset.index, 10));
+                });
+                cardEl.querySelectorAll('[contenteditable="true"]').forEach(field => {
+                    field.addEventListener('input', () => adjustFontSize(field));
+                    field.addEventListener('blur', () => updateCardDataFromDOM(field));
+                });
+            });
+        }
+        
+        // --- МОДАЛЬНОЕ ОКНО ---
+        function setupModalListeners() {
+            modalBackdrop.onclick = closeIconModal;
+        }
+
+        function openIconModal(targetIcon, index) {
+            modalEditingIndex = index;
+            populateModalSelector();
+            const rect = targetIcon.getBoundingClientRect();
+            iconModal.style.display = 'block';
+            modalBackdrop.style.display = 'block';
+            let top = rect.bottom + window.scrollY + 5;
+            let left = rect.left + window.scrollX - (iconModal.offsetWidth / 2) + (rect.width / 2);
+            if (left < 10) left = 10;
+            if (left + iconModal.offsetWidth > window.innerWidth - 10) {
+                left = window.innerWidth - iconModal.offsetWidth - 10;
+            }
+            iconModal.style.top = `${top}px`;
+            iconModal.style.left = `${left}px`;
+        }
+
+        function closeIconModal() {
+            iconModal.style.display = 'none';
+            modalBackdrop.style.display = 'none';
+            modalEditingIndex = null;
+        }
+
+        function populateModalSelector() {
+            modalIconSelector.innerHTML = '';
+            defaultIconTypes.forEach(({ icon, type }) => {
+                const option = document.createElement('div');
+                option.className = 'icon-option';
+                option.innerHTML = `
+                    <div class="icon-emoji-box">${icon}</div>
+                    <div class="icon-label">${type}</div>`;
+                option.onclick = () => selectCardType(type);
+                modalIconSelector.appendChild(option);
+            });
+        }
+        
+        function selectCardType(selectedType) {
+            if (modalEditingIndex === null || !cards[modalEditingIndex]) return;
+            const typeData = defaultIconTypes.find(t => t.type === selectedType);
+            if (typeData) {
+                cards[modalEditingIndex].type = typeData.type;
+                cards[modalEditingIndex].icon = typeData.icon;
+                renderCardsList();
+            }
+            closeIconModal();
+        }
+        
+        // --- ГЛАВНАЯ УТИЛИТА ---
+        function adjustFontSize(element) {
+            if (!element || !(element.classList.contains('card-title') || element.classList.contains('card-subtitle'))) return;
+            let maxFontSize, minFontSize, maxLines;
+            if (element.classList.contains('card-title')) {
+                maxFontSize = 20; minFontSize = 8; maxLines = 2;
+            } else {
+                maxFontSize = 12; minFontSize = 8; maxLines = 2;
+            }
+            const checkForOverflow = (el) => {
+                const computedStyle = window.getComputedStyle(el);
+                const maxWidth = el.clientWidth;
+                ruler.style.font = computedStyle.font;
+                ruler.style.letterSpacing = computedStyle.letterSpacing;
+                ruler.style.textTransform = computedStyle.textTransform;
+                const words = el.textContent.split(/\s+/);
+                for (const word of words) {
+                    ruler.textContent = word;
+                    if (ruler.offsetWidth > maxWidth) return true;
+                }
+                const singleLineHeight = parseFloat(computedStyle.lineHeight);
+                const maxHeight = (singleLineHeight * maxLines) + 1;
+                return el.scrollHeight > maxHeight;
+            };
+            
+            let currentSize = maxFontSize;
+            element.style.fontSize = currentSize + 'px';
+            while (currentSize > minFontSize && checkForOverflow(element)) {
+                currentSize--;
+                element.style.fontSize = currentSize + 'px';
+            }
+        }
+
+        // --- ФАЙЛОВЫЕ ОПЕРАЦИИ ---
+        function printCards() {
+            if (cards.length === 0) return alert('Нет карточек для печати!');
+            window.print();
+        }
+
+        function saveJSON() {
+            if (cards.length === 0) return alert('Нет карточек для сохранения!');
+            const dataStr = JSON.stringify(cards, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'cards-data.json';
+            a.click(); URL.revokeObjectURL(url);
+        }
+
+        function loadJSON() { fileInput.click(); }
+        
+        function handleFileLoad(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const loadedCards = JSON.parse(e.target.result);
+                    if (Array.isArray(loadedCards)) {
+                        loadedCards.forEach(card => {
+                            if (card.type && !card.icon) {
+                                const typeData = defaultIconTypes.find(t => t.type === card.type);
+                                card.icon = typeData ? typeData.icon : '❓';
+                            }
+                        });
+                        if (cards.length === 0 || confirm('Текущие карточки будут заменены. Загрузить новые?')) {
+                            cards = loadedCards;
+                            renderCardsList();
+                            alert('Карточки успешно загружены!');
+                        }
+                    } else { alert('Ошибка: JSON файл имеет неверную структуру (ожидается массив).'); }
+                } catch (err) { alert('Ошибка при чтении файла: ' + err.message);
+                } finally { fileInput.value = ''; }
+            };
+            reader.readAsText(file);
+        }
+        fileInput.addEventListener('change', handleFileLoad);
+
+        function clearAll() {
+            if (confirm('Вы уверены, что хотите удалить ВСЕ карточки? Это действие необратимо.')) {
+                cards = [];
+                renderCardsList();
+            }
+        }
+    </script>
+</body>
+</html>
