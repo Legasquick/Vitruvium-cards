@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
 
     <style>
-        /* --- ПЕРЕМЕННЫЕ И БАЗА --- */
+        /* --- БАЗА --- */
         :root {
             --card-width: 63mm;
             --card-height: 88mm;
@@ -35,22 +35,21 @@
         .cards-list { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, var(--card-width)); 
-            gap: 30px; /* Увеличил отступ, чтобы было место для кнопок снизу */
+            gap: 40px; /* Больше воздуха между картами */
             justify-content: center; 
             padding-bottom: 60px;
         }
         
         .card-wrapper { 
-            position: relative; 
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
-            /* ВАЖНО: Добавляем прозрачный паддинг снизу, чтобы курсор не терял фокус при переходе к кнопкам */
-            padding-bottom: 35px; 
-            margin-bottom: -35px; /* Компенсируем отступ */
+            position: relative;
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), z-index 0s;
+            z-index: 1;
         }
+        
+        /* Эффект парения при наведении */
         .card-wrapper:hover {
-            transform: translateY(-2px);
-            z-index: 10; /* Поднимаем карточку при наведении */
+            transform: translateY(-8px); /* Карточка поднимается выше */
+            z-index: 10;
         }
 
         /* --- КАРТОЧКА --- */
@@ -64,20 +63,27 @@
             border-radius: 0; 
             overflow: hidden;
             position: relative;
-            z-index: 2; /* Карточка выше кнопок */
+            
+            /* ТЕНЬ (Screen only) */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: box-shadow 0.3s ease;
         }
 
+        /* Усиленная тень при наведении */
+        .card-wrapper:hover .card {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Фокус ввода */
         .card:has([contenteditable="true"]:focus) { 
-            outline: 4px solid rgba(59, 130, 246, 0.5);
-            outline-offset: 2px;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
         }
 
-        /* Шапка карточки */
+        /* --- КОМПОНЕНТЫ КАРТЫ --- */
         .card-header { 
             padding: 8px 8px; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
+            display: flex; align-items: center; gap: 8px; 
             border-bottom: 2px solid #000;
             height: 64px; 
             overflow: hidden;
@@ -85,155 +91,140 @@
 
         .card-title {
             flex: 1; 
-            font-family: 'Cinzel', serif; 
-            font-weight: 900; 
-            font-size: 24px; /* КРУПНЫЙ СТАРТОВЫЙ РАЗМЕР */
-            line-height: 1.1; 
-            text-transform: uppercase;
-            color: white;
+            font-family: 'Cinzel', serif; font-weight: 900; 
+            font-size: 24px; line-height: 1.1; 
+            text-transform: uppercase; color: white;
             text-shadow: 1px 1px 0 #000; 
-            
-            display: block; 
-            max-height: 54px; 
-            overflow: hidden; 
-            word-wrap: break-word;
-            align-self: center; 
+            display: block; max-height: 54px; 
+            overflow: hidden; word-wrap: break-word; align-self: center; 
         }
 
         .card-icon {
-            flex-shrink: 0; 
-            width: 34px; height: 34px;
+            flex-shrink: 0; width: 34px; height: 34px;
             display: flex; justify-content: center; align-items: center;
-            background: rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.4);
-            cursor: pointer; 
+            background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.4);
+            cursor: pointer; transition: background 0.2s;
         }
         .card-icon svg { width: 22px; height: 22px; stroke: white; stroke-width: 2; }
-        .card-icon:hover { background: rgba(255,255,255,0.3); }
+        .card-icon:hover { background: rgba(255,255,255,0.4); }
 
-        /* Подзаголовок */
         .card-subtitle {
             padding: 4px 10px; 
-            font-family: 'Inter', sans-serif;
-            font-size: 10px; 
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px; 
+            font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px; 
             border-bottom: 1px solid #000;
-            color: rgba(255,255,255,0.95);
-            white-space: nowrap;
-            overflow: hidden;
+            color: rgba(255,255,255,0.95); white-space: nowrap; overflow: hidden;
         }
 
-        /* Тело карточки */
         .card-content {
-            flex: 1; 
-            padding: 10px 12px; 
-            font-family: 'Merriweather', serif; 
-            font-size: 11px; 
-            line-height: 1.35; 
-            color: #1c1917; 
-            background-color: #fff;
-            overflow: hidden;
+            flex: 1; padding: 10px 12px; 
+            font-family: 'Merriweather', serif; font-size: 11px; line-height: 1.35; 
+            color: #1c1917; background-color: #fff; overflow: hidden;
         }
 
-        /* --- КНОПКА ДОБАВЛЕНИЯ --- */
+        /* --- НОВЫЙ ДИЗАЙН УПРАВЛЕНИЯ (FLOATING TOOLBAR) --- */
+        .card-controls {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px); /* Скрыто внизу */
+            
+            display: flex;
+            align-items: center;
+            gap: 0; /* Кнопки слиты */
+            
+            background: #1c1917;
+            border: 2px solid #fff;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.3);
+            
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Пружинистая анимация */
+            z-index: 20;
+            overflow: hidden; /* Чтобы скругление (если было бы) работало */
+        }
+
+        /* Показ при наведении */
+        .card-wrapper:hover .card-controls {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: all;
+        }
+
+        .ctrl-btn {
+            width: 40px; height: 36px;
+            display: flex; justify-content: center; align-items: center;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: none;
+            border-right: 1px solid rgba(255,255,255,0.2);
+        }
+        .ctrl-btn:last-child { border-right: none; }
+        
+        .ctrl-btn svg { width: 18px; height: 18px; stroke-width: 2; }
+
+        .ctrl-btn.btn-copy:hover { background: #059669; } /* Зеленый */
+        .ctrl-btn.btn-del:hover { background: #dc2626; }  /* Красный */
+
+
+        /* --- ADD BUTTON --- */
         .card-adder {
             width: var(--card-width); height: var(--card-height); 
-            border: 2px dashed #a8a29e;
-            background: rgba(255,255,255,0.5);
+            border: 2px dashed #a8a29e; background: rgba(255,255,255,0.5);
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            cursor: pointer; transition: all 0.3s;
-            color: #78716c;
+            cursor: pointer; transition: all 0.3s; color: #78716c;
         }
-        .card-adder:hover { border-color: #1c1917; color: #1c1917; background: white; }
+        .card-adder:hover { border-color: #1c1917; color: #1c1917; background: white; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
         .card-adder span { font-size: 40px; margin-bottom: 10px; }
         .card-adder p { font-family: 'Cinzel', serif; font-size: 12px; font-weight: bold; }
 
-        /* --- УПРАВЛЕНИЕ (ИСПРАВЛЕНО) --- */
-        .card-controls { 
-            position: absolute; 
-            bottom: 0; left: 0; right: 0; /* Привязываем к низу враппера */
-            display: flex; justify-content: center; gap: 10px; 
-            opacity: 0; transition: all 0.2s; 
-            z-index: 100;
-            height: 30px; /* Высота блока кнопок */
-            padding-bottom: 5px;
-        }
-        /* Показываем кнопки при наведении на враппер */
-        .card-wrapper:hover .card-controls { 
-            opacity: 1; 
-            transform: translateY(5px); /* Небольшая анимация */
-        }
-        
-        .ctrl-btn { 
-            display: flex; justify-content: center; align-items: center; gap: 5px;
-            padding: 4px 12px;
-            font-size: 10px; font-weight: bold; font-family: 'Inter', sans-serif; text-transform: uppercase;
-            border-radius: 4px; border: 1px solid #000; 
-            color: white; cursor: pointer; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .btn-copy { background: #059669; }
-        .btn-copy:hover { background: #047857; }
-        .btn-del { background: #dc2626; }
-        .btn-del:hover { background: #b91c1c; }
-
-        /* --- ГЛОБАЛЬНЫЕ КНОПКИ (Вернули UI-btn) --- */
+        /* --- UI COMPONENTS --- */
         .ui-btn {
             display: flex; align-items: center; gap: 8px;
             padding: 12px 24px; 
             font-family: 'Cinzel', serif; font-weight: 700; font-size: 14px;
-            border: 2px solid #1c1917; 
-            background: white; color: #1c1917;
-            cursor: pointer; transition: all 0.2s;
-            box-shadow: 4px 4px 0 #a8a29e;
+            border: 2px solid #1c1917; background: white; color: #1c1917;
+            cursor: pointer; transition: all 0.2s; box-shadow: 4px 4px 0 #a8a29e;
         }
         .ui-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #1c1917; }
         .ui-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0; }
-        
         .ui-btn.primary { background: #1c1917; color: white; border-color: #1c1917; }
         .ui-btn.danger { border-color: #dc2626; color: #dc2626; }
         .ui-btn.danger:hover { background: #dc2626; color: white; box-shadow: 6px 6px 0 #7f1d1d; }
 
-        /* --- МОДАЛКА --- */
+        /* --- MODAL --- */
         #iconModal {
-            display: none; position: absolute; z-index: 9999; 
-            background: white; border: 2px solid #1c1917; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
-            width: 280px; padding: 0;
+            display: none; position: absolute; z-index: 9999; background: white; border: 2px solid #1c1917; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 280px; padding: 0;
         }
         .modal-header { background: #1c1917; color: white; padding: 8px; text-align: center; font-family: 'Cinzel', serif; font-weight: bold; font-size: 14px; }
         .icon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 12px; }
-        .icon-option { 
-            aspect-ratio: 1; border: 1px solid #e5e5e5; 
-            display: flex; justify-content: center; align-items: center; 
-            cursor: pointer; transition: all 0.2s; 
-        }
+        .icon-option { aspect-ratio: 1; border: 1px solid #e5e5e5; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s; }
         .icon-option:hover { background: #1c1917; }
         .icon-option svg { width: 24px; height: 24px; stroke: #1c1917; }
         .icon-option:hover svg { stroke: white; }
 
         [contenteditable="true"]:empty::before { content: attr(data-placeholder); color: rgba(0,0,0,0.3); font-style: italic; pointer-events: none; }
 
-        /* --- ПЕЧАТЬ --- */
+        /* --- PRINT --- */
         @media print {
             body { background: white; padding: 0; margin: 0; }
             .workspace { max-width: none; }
-            h1, h2, .global-buttons, .card-adder, .card-controls, .no-print { display: none !important; }
+            h1, h2, .global-buttons, .card-adder, .no-print { display: none !important; }
             
             .cards-list { 
-                display: grid; 
-                grid-template-columns: repeat(3, var(--card-width)); 
-                gap: 0; 
-                justify-content: center;
-                margin: 0; padding: 0;
+                display: grid; grid-template-columns: repeat(3, var(--card-width)); 
+                gap: 0; justify-content: center; margin: 0; padding: 0;
             }
             
             .card-wrapper { 
-                box-shadow: none; margin: 0; padding: 0; 
-                outline: none; /* НЕТ ЛИНИЙ РАЗРЕЗА */
+                box-shadow: none !important; margin: 0; padding: 0; 
+                transform: none !important; /* Отключаем поднятие */
             }
+            .card { box-shadow: none !important; }
+            
+            .card-controls { display: none !important; } /* Скрываем управление */
             
             .card, .card-header, .card-subtitle {
                 -webkit-print-color-adjust: exact !important;
@@ -254,7 +245,6 @@
 
         <div id="cardsList" class="cards-list"></div>
 
-        <!-- НОВЫЕ КНОПКИ УПРАВЛЕНИЯ -->
         <div class="global-buttons flex flex-wrap gap-4 justify-center border-t-2 border-stone-300 pt-8">
             <button class="ui-btn primary" onclick="printCards()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
@@ -313,7 +303,7 @@
         ];
 
         let cards = [];
-        let ruler; // Линейка для измерения текста
+        let ruler; 
         
         const cardsContainer = document.getElementById('cardsList');
         const countEl = document.getElementById('cardCount');
@@ -321,9 +311,7 @@
         const fileInput = document.getElementById('fileInput');
         let editingCardIndex = null;
 
-        // --- ИНИЦИАЛИЗАЦИЯ ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Создаем линейку (точная копия логики оригинала)
             ruler = document.createElement('span');
             ruler.style.position = 'absolute'; 
             ruler.style.visibility = 'hidden'; 
@@ -334,7 +322,6 @@
             backdrop.addEventListener('click', closeModal);
         });
 
-        // --- РЕНДЕРИНГ ---
         function render() {
             const scroll = window.scrollY;
             cardsContainer.innerHTML = '';
@@ -360,23 +347,23 @@
                         </div>
                         <div class="card-subtitle" style="background-color: ${typeInfo.subColor}; border-color: #000;" contenteditable="true" data-placeholder="ТИП / ПОДТИП">${card.subtitle}</div>
                         <div class="card-content" contenteditable="true" data-placeholder="Описание эффекта или свойства...">${card.content}</div>
-                    </div>
-                    <div class="card-controls">
-                        <div class="ctrl-btn btn-copy" onclick="copyCard(${index})" title="Копировать">
-                            КОПИРОВАТЬ
-                        </div>
-                        <div class="ctrl-btn btn-del" onclick="delCard(${index})" title="Удалить">
-                            УДАЛИТЬ
+                        
+                        <!-- КНОПКИ УПРАВЛЕНИЯ (ТЕПЕРЬ ВНУТРИ КАРТЫ) -->
+                        <div class="card-controls">
+                            <button class="ctrl-btn btn-copy" onclick="copyCard(${index})" title="Копировать">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                            <button class="ctrl-btn btn-del" onclick="delCard(${index})" title="Удалить">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
                         </div>
                     </div>
                 `;
                 cardsContainer.appendChild(wrapper);
                 
-                // Подгонка шрифта
-                const titleEl = wrapper.querySelector('.card-title');
-                const subEl = wrapper.querySelector('.card-subtitle');
-                // Таймаут нужен, чтобы элемент успел отрендериться в DOM
                 setTimeout(() => {
+                    const titleEl = wrapper.querySelector('.card-title');
+                    const subEl = wrapper.querySelector('.card-subtitle');
                     adjustFontSize(titleEl);
                     adjustFontSize(subEl);
                 }, 0);
@@ -410,15 +397,13 @@
             cards[index].content = content;
         }
 
-        // --- ФУНКЦИЯ ПОДГОНКИ ШРИФТА (ТОЧНАЯ КОПИЯ ЛОГИКИ ОРИГИНАЛА) ---
         function adjustFontSize(element) {
             if (!element || !(element.classList.contains('card-title') || element.classList.contains('card-subtitle'))) return;
             
             let maxFontSize, minFontSize, maxLines;
             
-            // Адаптация размеров под наш дизайн
             if (element.classList.contains('card-title')) {
-                maxFontSize = 24; // Стартуем с крупного
+                maxFontSize = 24; 
                 minFontSize = 10; 
                 maxLines = 2;
             } else {
@@ -431,42 +416,32 @@
                 const computedStyle = window.getComputedStyle(el);
                 const maxWidth = el.clientWidth;
                 
-                // Синхронизируем линейку со стилями элемента
                 ruler.style.font = computedStyle.font;
                 ruler.style.letterSpacing = computedStyle.letterSpacing;
                 ruler.style.textTransform = computedStyle.textTransform;
                 
-                // Проверка ширины самого длинного слова
                 const words = el.textContent.split(/\s+/);
                 for (const word of words) {
                     ruler.textContent = word;
                     if (ruler.offsetWidth > maxWidth) return true;
                 }
                 
-                // Проверка высоты (кол-во строк)
                 const singleLineHeight = parseFloat(computedStyle.lineHeight);
-                const maxHeight = (singleLineHeight * maxLines) + 2; // +2px на погрешность
+                const maxHeight = (singleLineHeight * maxLines) + 2;
                 return el.scrollHeight > maxHeight;
             };
             
             let currentSize = maxFontSize;
             element.style.fontSize = currentSize + 'px';
             
-            // Уменьшаем, пока есть переполнение
             while (currentSize > minFontSize && checkForOverflow(element)) {
                 currentSize--;
                 element.style.fontSize = currentSize + 'px';
             }
         }
 
-        // --- ДЕЙСТВИЯ ---
         function addCard() {
-            cards.unshift({
-                typeId: 'item',
-                title: '',
-                subtitle: '',
-                content: ''
-            });
+            cards.unshift({ typeId: 'item', title: '', subtitle: '', content: '' });
             render();
             const newTitle = document.querySelector('.card[data-index="0"] .card-title');
             if(newTitle) newTitle.focus();
@@ -484,13 +459,9 @@
         }
 
         function clearAll() {
-            if(confirm("Удалить все карточки?")) {
-                cards = [];
-                render();
-            }
+            if(confirm("Удалить все карточки?")) { cards = []; render(); }
         }
 
-        // --- МОДАЛКА ---
         function openModal(index, btnEl) {
             editingCardIndex = index;
             const rect = btnEl.getBoundingClientRect();
@@ -530,7 +501,6 @@
             closeModal();
         }
 
-        // --- ФАЙЛЫ ---
         function saveJSON() {
             if(!cards.length) return alert("Пусто!");
             const blob = new Blob([JSON.stringify(cards, null, 2)], {type: 'application/json'});
