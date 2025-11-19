@@ -35,7 +35,7 @@
         .cards-list { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, var(--card-width)); 
-            gap: 40px; /* Больше воздуха между картами */
+            gap: 40px;
             justify-content: center; 
             padding-bottom: 60px;
         }
@@ -46,9 +46,8 @@
             z-index: 1;
         }
         
-        /* Эффект парения при наведении */
         .card-wrapper:hover {
-            transform: translateY(-8px); /* Карточка поднимается выше */
+            transform: translateY(-8px);
             z-index: 10;
         }
 
@@ -63,18 +62,14 @@
             border-radius: 0; 
             overflow: hidden;
             position: relative;
-            
-            /* ТЕНЬ (Screen only) */
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             transition: box-shadow 0.3s ease;
         }
 
-        /* Усиленная тень при наведении */
         .card-wrapper:hover .card {
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
         }
 
-        /* Фокус ввода */
         .card:has([contenteditable="true"]:focus) { 
             border-color: #3b82f6;
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
@@ -122,52 +117,34 @@
             color: #1c1917; background-color: #fff; overflow: hidden;
         }
 
-        /* --- НОВЫЙ ДИЗАЙН УПРАВЛЕНИЯ (FLOATING TOOLBAR) --- */
+        /* --- УПРАВЛЕНИЕ --- */
         .card-controls {
             position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%) translateY(20px); /* Скрыто внизу */
-            
-            display: flex;
-            align-items: center;
-            gap: 0; /* Кнопки слиты */
-            
-            background: #1c1917;
-            border: 2px solid #fff;
+            bottom: 15px; left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            display: flex; align-items: center; gap: 0;
+            background: #1c1917; border: 2px solid #fff;
             box-shadow: 0 10px 15px rgba(0,0,0,0.3);
-            
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Пружинистая анимация */
-            z-index: 20;
-            overflow: hidden; /* Чтобы скругление (если было бы) работало */
+            opacity: 0; pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 20; overflow: hidden;
         }
 
-        /* Показ при наведении */
         .card-wrapper:hover .card-controls {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-            pointer-events: all;
+            opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: all;
         }
 
         .ctrl-btn {
             width: 40px; height: 36px;
             display: flex; justify-content: center; align-items: center;
-            background: transparent;
-            color: white;
-            cursor: pointer;
-            transition: background 0.2s;
-            border: none;
-            border-right: 1px solid rgba(255,255,255,0.2);
+            background: transparent; color: white;
+            cursor: pointer; transition: background 0.2s;
+            border: none; border-right: 1px solid rgba(255,255,255,0.2);
         }
         .ctrl-btn:last-child { border-right: none; }
-        
         .ctrl-btn svg { width: 18px; height: 18px; stroke-width: 2; }
-
-        .ctrl-btn.btn-copy:hover { background: #059669; } /* Зеленый */
-        .ctrl-btn.btn-del:hover { background: #dc2626; }  /* Красный */
-
+        .ctrl-btn.btn-copy:hover { background: #059669; }
+        .ctrl-btn.btn-del:hover { background: #dc2626; }
 
         /* --- ADD BUTTON --- */
         .card-adder {
@@ -194,9 +171,16 @@
         .ui-btn.danger { border-color: #dc2626; color: #dc2626; }
         .ui-btn.danger:hover { background: #dc2626; color: white; box-shadow: 6px 6px 0 #7f1d1d; }
 
-        /* --- MODAL --- */
+        /* --- MODALS --- */
+        #modalBackdrop {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 40;
+        }
+
+        /* Icon Modal */
         #iconModal {
-            display: none; position: absolute; z-index: 9999; background: white; border: 2px solid #1c1917; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 280px; padding: 0;
+            display: none; position: absolute; z-index: 50; background: white; 
+            border: 2px solid #1c1917; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 280px; padding: 0;
         }
         .modal-header { background: #1c1917; color: white; padding: 8px; text-align: center; font-family: 'Cinzel', serif; font-weight: bold; font-size: 14px; }
         .icon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 12px; }
@@ -204,6 +188,23 @@
         .icon-option:hover { background: #1c1917; }
         .icon-option svg { width: 24px; height: 24px; stroke: #1c1917; }
         .icon-option:hover svg { stroke: white; }
+
+        /* JSON Modal */
+        #jsonModal {
+            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 50; background: white; border: 2px solid #1c1917; 
+            width: 600px; max-width: 95%;
+            box-shadow: 10px 10px 0 rgba(0,0,0,0.2);
+        }
+        .json-modal-body { padding: 20px; }
+        #jsonInput {
+            width: 100%; height: 250px; 
+            border: 2px solid #e7e5e4; padding: 10px;
+            font-family: monospace; font-size: 12px;
+            resize: vertical; outline: none;
+        }
+        #jsonInput:focus { border-color: #1c1917; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
 
         [contenteditable="true"]:empty::before { content: attr(data-placeholder); color: rgba(0,0,0,0.3); font-style: italic; pointer-events: none; }
 
@@ -220,11 +221,10 @@
             
             .card-wrapper { 
                 box-shadow: none !important; margin: 0; padding: 0; 
-                transform: none !important; /* Отключаем поднятие */
+                transform: none !important;
             }
             .card { box-shadow: none !important; }
-            
-            .card-controls { display: none !important; } /* Скрываем управление */
+            .card-controls { display: none !important; }
             
             .card, .card-header, .card-subtitle {
                 -webkit-print-color-adjust: exact !important;
@@ -250,14 +250,23 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                 Печать PDF
             </button>
+            
             <button class="ui-btn" onclick="saveJSON()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                 Сохранить
             </button>
-            <button class="ui-btn" onclick="loadJSON()">
+            
+            <!-- Группа загрузки -->
+            <button class="ui-btn" onclick="loadJSONFile()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                Загрузить
+                Файл
             </button>
+
+            <button class="ui-btn" onclick="openJsonModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Текст
+            </button>
+
             <button class="ui-btn danger" onclick="clearAll()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 Сброс
@@ -265,10 +274,26 @@
         </div>
     </div>
 
-    <div id="modalBackdrop" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:40;"></div>
+    <!-- Backdrops & Modals -->
+    <div id="modalBackdrop"></div>
+    
+    <!-- Icon Selector -->
     <div id="iconModal">
         <div class="modal-header">ТИП КАРТЫ</div>
         <div class="icon-grid" id="modalIconSelector"></div>
+    </div>
+
+    <!-- Text JSON Loader -->
+    <div id="jsonModal">
+        <div class="modal-header">ИМПОРТ JSON ТЕКСТА</div>
+        <div class="json-modal-body">
+            <p class="text-sm text-gray-500 mb-2 font-sans">Вставьте содержимое JSON файла сюда:</p>
+            <textarea id="jsonInput" placeholder='[{"title": "Example"...}]'></textarea>
+            <div class="modal-actions">
+                <button class="ui-btn danger" onclick="closeAllModals()">Отмена</button>
+                <button class="ui-btn primary" onclick="applyJsonText()">Загрузить</button>
+            </div>
+        </div>
     </div>
 
     <input type="file" id="fileInput" accept=".json" style="display: none;">
@@ -319,7 +344,7 @@
             document.body.appendChild(ruler);
 
             render();
-            backdrop.addEventListener('click', closeModal);
+            backdrop.addEventListener('click', closeAllModals);
         });
 
         function render() {
@@ -343,12 +368,11 @@
                     <div class="card" data-index="${index}">
                         <div class="card-header" style="background-color: ${typeInfo.color}; border-color: #000;">
                             <div class="card-title" contenteditable="true" data-placeholder="НАЗВАНИЕ">${card.title}</div>
-                            <div class="card-icon" onclick="openModal(${index}, this)">${svgIcon}</div>
+                            <div class="card-icon" onclick="openIconModal(${index}, this)">${svgIcon}</div>
                         </div>
                         <div class="card-subtitle" style="background-color: ${typeInfo.subColor}; border-color: #000;" contenteditable="true" data-placeholder="ТИП / ПОДТИП">${card.subtitle}</div>
                         <div class="card-content" contenteditable="true" data-placeholder="Описание эффекта или свойства...">${card.content}</div>
                         
-                        <!-- КНОПКИ УПРАВЛЕНИЯ (ТЕПЕРЬ ВНУТРИ КАРТЫ) -->
                         <div class="card-controls">
                             <button class="ctrl-btn btn-copy" onclick="copyCard(${index})" title="Копировать">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
@@ -403,19 +427,14 @@
             let maxFontSize, minFontSize, maxLines;
             
             if (element.classList.contains('card-title')) {
-                maxFontSize = 24; 
-                minFontSize = 10; 
-                maxLines = 2;
+                maxFontSize = 24; minFontSize = 10; maxLines = 2;
             } else {
-                maxFontSize = 12; 
-                minFontSize = 8; 
-                maxLines = 2;
+                maxFontSize = 12; minFontSize = 8; maxLines = 2;
             }
 
             const checkForOverflow = (el) => {
                 const computedStyle = window.getComputedStyle(el);
                 const maxWidth = el.clientWidth;
-                
                 ruler.style.font = computedStyle.font;
                 ruler.style.letterSpacing = computedStyle.letterSpacing;
                 ruler.style.textTransform = computedStyle.textTransform;
@@ -425,7 +444,6 @@
                     ruler.textContent = word;
                     if (ruler.offsetWidth > maxWidth) return true;
                 }
-                
                 const singleLineHeight = parseFloat(computedStyle.lineHeight);
                 const maxHeight = (singleLineHeight * maxLines) + 2;
                 return el.scrollHeight > maxHeight;
@@ -433,7 +451,6 @@
             
             let currentSize = maxFontSize;
             element.style.fontSize = currentSize + 'px';
-            
             while (currentSize > minFontSize && checkForOverflow(element)) {
                 currentSize--;
                 element.style.fontSize = currentSize + 'px';
@@ -448,21 +465,20 @@
         }
 
         function delCard(index) {
-            cards.splice(index, 1);
-            render();
+            cards.splice(index, 1); render();
         }
 
         function copyCard(index) {
             const clone = JSON.parse(JSON.stringify(cards[index]));
-            cards.splice(index + 1, 0, clone);
-            render();
+            cards.splice(index + 1, 0, clone); render();
         }
 
         function clearAll() {
             if(confirm("Удалить все карточки?")) { cards = []; render(); }
         }
 
-        function openModal(index, btnEl) {
+        // --- ICON SELECTION MODAL ---
+        function openIconModal(index, btnEl) {
             editingCardIndex = index;
             const rect = btnEl.getBoundingClientRect();
             const modal = document.getElementById('iconModal');
@@ -487,20 +503,42 @@
             modal.style.left = left + 'px';
         }
 
-        function closeModal() {
-            document.getElementById('iconModal').style.display = 'none';
-            backdrop.style.display = 'none';
-            editingCardIndex = null;
-        }
-
         function setCardType(typeId) {
             if (editingCardIndex !== null && cards[editingCardIndex]) {
                 cards[editingCardIndex].typeId = typeId;
                 render();
             }
-            closeModal();
+            closeAllModals();
         }
 
+        // --- JSON TEXT MODAL ---
+        function openJsonModal() {
+            document.getElementById('jsonInput').value = '';
+            backdrop.style.display = 'block';
+            document.getElementById('jsonModal').style.display = 'block';
+            document.getElementById('jsonInput').focus();
+        }
+
+        function applyJsonText() {
+            const val = document.getElementById('jsonInput').value.trim();
+            if (!val) return;
+            try {
+                const data = JSON.parse(val);
+                processLoadedData(data);
+                closeAllModals();
+            } catch (e) {
+                alert("Ошибка: Некорректный JSON");
+            }
+        }
+
+        function closeAllModals() {
+            document.getElementById('iconModal').style.display = 'none';
+            document.getElementById('jsonModal').style.display = 'none';
+            backdrop.style.display = 'none';
+            editingCardIndex = null;
+        }
+
+        // --- SAVING & LOADING LOGIC ---
         function saveJSON() {
             if(!cards.length) return alert("Пусто!");
             const blob = new Blob([JSON.stringify(cards, null, 2)], {type: 'application/json'});
@@ -510,7 +548,8 @@
             a.click();
         }
 
-        function loadJSON() { document.getElementById('fileInput').click(); }
+        function loadJSONFile() { document.getElementById('fileInput').click(); }
+        
         fileInput.addEventListener('change', e => {
             const file = e.target.files[0];
             if (!file) return;
@@ -518,20 +557,26 @@
             reader.onload = ev => {
                 try {
                     const data = JSON.parse(ev.target.result);
-                    if(Array.isArray(data)) {
-                        cards = data.map(c => ({
-                            typeId: c.typeId || 'item',
-                            title: c.title || '',
-                            subtitle: c.subtitle || '',
-                            content: c.content || c.description || ''
-                        }));
-                        render();
-                    }
+                    processLoadedData(data);
                 } catch(err) { alert("Ошибка файла"); }
             };
             reader.readAsText(file);
             e.target.value = '';
         });
+
+        function processLoadedData(data) {
+            if(Array.isArray(data)) {
+                cards = data.map(c => ({
+                    typeId: c.typeId || 'item',
+                    title: c.title || '',
+                    subtitle: c.subtitle || '',
+                    content: c.content || c.description || ''
+                }));
+                render();
+            } else {
+                alert("Неверный формат данных (должен быть массив)");
+            }
+        }
 
         function printCards() {
             if(!cards.length) return alert("Нет карт для печати");
