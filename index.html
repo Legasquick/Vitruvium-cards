@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Мастерская Карт (Final Fix)</title>
+    <title>Мастерская Карт (Tablet Fix)</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Шрифты -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
 
     <style>
@@ -18,164 +15,114 @@
             font-family: 'Cinzel', serif; 
             color: #1c1917;
             -webkit-font-smoothing: antialiased;
-            /* Большой отступ снизу только для мобилок, чтобы был ход скролла */
             padding: 20px 10px 80vh 10px; 
             min-height: 100vh;
         }
 
-        /* На ПК убираем гигантский отступ снизу */
-        @media (min-width: 1025px) {
-            body { padding-bottom: 100px; }
-        }
-
+        @media (min-width: 1025px) { body { padding-bottom: 100px; } }
         .font-header { font-family: 'Cinzel', serif; }
         .font-body { font-family: 'Merriweather', serif; }
 
         /* --- СЕТКА --- */
-        :root {
-            --card-width: 63mm;
-            --card-height: 88mm;
-        }
-
+        :root { --card-width: 63mm; --card-height: 88mm; }
         .workspace { max-width: 1400px; margin: 0 auto; }
-
         .cards-list { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, var(--card-width)); 
-            gap: 30px;
+            gap: 30px; 
             justify-content: center; 
         }
         
         .card-wrapper { 
-            position: relative;
-            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            z-index: 1;
-            scroll-margin-top: 5px;
+            position: relative; 
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            z-index: 1; 
+            scroll-margin-top: 5px; 
         }
 
-        /* Hover эффекты (поднятие) ТОЛЬКО для ПК (мышь) */
+        /* Поднятие ТОЛЬКО для ПК */
         @media (min-width: 1025px) {
             .card-wrapper:hover { transform: translateY(-8px); z-index: 10; }
             .card-wrapper:hover .card { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
         }
-
-        /* Активное состояние (выделение рамкой) */
         .card-wrapper.active { z-index: 20; }
 
         /* --- КАРТОЧКА --- */
         .card {
-            width: var(--card-width); 
-            height: var(--card-height); 
-            background: white;
-            display: flex; 
-            flex-direction: column;
-            border: 2px solid #1c1917; 
-            overflow: hidden;
-            position: relative;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            flex-shrink: 0; 
+            width: var(--card-width); height: var(--card-height); background: white;
+            display: flex; flex-direction: column; border: 2px solid #1c1917; 
+            overflow: hidden; position: relative; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0; 
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-
         .card-wrapper.active .card {
             border-color: #3b82f6; 
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2), 0 10px 15px -3px rgba(0,0,0,0.1);
         }
 
-        /* --- ВНУТРЕННОСТИ --- */
-        .card-header { 
-            padding: 8px 8px; display: flex; align-items: center; gap: 8px; 
-            border-bottom: 2px solid #1c1917; min-height: 64px; height: auto;
-        }
-        .card-title {
-            flex: 1; font-family: 'Cinzel', serif; font-weight: 900; 
-            font-size: 24px; line-height: 1.1; text-transform: uppercase; color: white;
-            text-shadow: 1px 1px 0 #000; word-wrap: break-word; align-self: center; 
-        }
-        .card-icon {
-            flex-shrink: 0; width: 34px; height: 34px;
-            display: flex; justify-content: center; align-items: center;
-            background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.4);
-            cursor: pointer;
-        }
+        /* --- КОНТЕНТ КАРТЫ --- */
+        .card-header { padding: 8px 8px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #1c1917; min-height: 64px; height: auto; }
+        .card-title { flex: 1; font-family: 'Cinzel', serif; font-weight: 900; font-size: 24px; line-height: 1.1; text-transform: uppercase; color: white; text-shadow: 1px 1px 0 #000; word-wrap: break-word; align-self: center; }
+        .card-icon { flex-shrink: 0; width: 34px; height: 34px; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.4); cursor: pointer; }
         .card-icon svg { width: 22px; height: 22px; stroke: white; stroke-width: 2; }
-        .card-subtitle {
-            padding: 5px 10px; font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #1c1917;
-            color: rgba(255,255,255,0.95); white-space: pre-wrap; word-wrap: break-word;
-            min-height: 24px; line-height: 1.25;
-        }
-        .card-content {
-            flex: 1; padding: 10px 12px; font-family: 'Merriweather', serif; 
-            font-size: 11px; line-height: 1.35; color: #1c1917; background-color: #fff; overflow: hidden;
-        }
+        .card-subtitle { padding: 5px 10px; font-family: 'Cinzel', serif; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #1c1917; color: rgba(255,255,255,0.95); white-space: pre-wrap; word-wrap: break-word; min-height: 24px; line-height: 1.25; }
+        .card-content { flex: 1; padding: 10px 12px; font-family: 'Merriweather', serif; font-size: 11px; line-height: 1.35; color: #1c1917; background-color: #fff; overflow: hidden; }
         [contenteditable="true"]:empty::before { content: attr(data-placeholder); color: rgba(0,0,0,0.3); pointer-events: none; }
         .card-title:empty::before, .card-subtitle:empty::before { color: rgba(255, 255, 255, 0.5) !important; text-shadow: none; }
 
-        /* --- КНОПКИ УПРАВЛЕНИЯ (СЛОЖНАЯ ЛОГИКА) --- */
+        /* --- КНОПКИ УПРАВЛЕНИЯ (FIXED) --- */
         .card-controls {
             position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
             display: flex; align-items: center; gap: 12px; z-index: 30;
             
-            /* ПО УМОЛЧАНИЮ: Невидимы и НЕКЛИКАБЕЛЬНЫ */
+            /* БАЗОВОЕ СОСТОЯНИЕ: ПОЛНОСТЬЮ ОТКЛЮЧЕНЫ */
             opacity: 0; 
+            visibility: hidden; /* Гарантирует, что нажать нельзя */
             pointer-events: none; 
             
-            transition: opacity 0.2s, transform 0.2s;
+            transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
         }
 
-        /* ЛОГИКА ДЛЯ ПК (Mouse Hover) */
+        /* ЛОГИКА ДЛЯ ПК (Mouse) */
         @media (min-width: 1025px) {
             .card-wrapper:hover .card-controls { 
                 opacity: 1; 
-                pointer-events: all; /* Включаем клик только при наведении */
+                visibility: visible;
+                pointer-events: auto; 
             }
         }
 
-        /* ЛОГИКА ДЛЯ МОБИЛОК И ПЛАНШЕТОВ (Touch Active) */
+        /* ЛОГИКА ДЛЯ ПЛАНШЕТОВ И ТЕЛЕФОНОВ (Touch) */
         @media (max-width: 1024px) {
-            /* Отключаем hover-эффекты чтобы не было "призрачных" нажатий */
+            /* 1. БЛОКИРУЕМ HOVER (убираем "призрачные" нажатия при тапе) */
             .card-wrapper:hover .card-controls { 
                 opacity: 0; 
+                visibility: hidden;
                 pointer-events: none; 
             }
             
-            /* Показываем и включаем клик ТОЛЬКО если есть класс .active */
+            /* 2. РАЗРЕШАЕМ ТОЛЬКО ПРИ ACTIVE */
             .card-wrapper.active .card-controls { 
                 opacity: 1 !important; 
-                pointer-events: all !important; 
+                visibility: visible !important;
+                pointer-events: auto !important; 
                 transform: translateX(-50%) translateY(-5px); 
             }
         }
 
-        .mini-btn {
-            width: 42px; height: 42px; border-radius: 50%; display: flex; justify-content: center; align-items: center;
-            background: #1c1917; color: white; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.4); cursor: pointer;
-        }
+        .mini-btn { width: 42px; height: 42px; border-radius: 50%; display: flex; justify-content: center; align-items: center; background: #1c1917; color: white; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.4); cursor: pointer; }
         .mini-btn.del { background: #dc2626; }
         .mini-btn.copy { background: #059669; }
 
-        /* --- МОБИЛЬНОЕ МЕНЮ (включая планшеты) --- */
+        /* --- МЕНЮ --- */
         @media (max-width: 1024px) {
-            .floating-menu {
-                top: auto !important; right: 0 !important; left: 0 !important; bottom: 0 !important;
-                width: 100%; flex-direction: row !important; justify-content: space-around;
-                padding: 12px 10px 25px 10px !important; border-radius: 20px 20px 0 0 !important;
-                border-top: 1px solid #d6d3d1; background: rgba(255,255,255,0.95) !important;
-                backdrop-filter: blur(10px);
-            }
+            .floating-menu { top: auto !important; right: 0 !important; left: 0 !important; bottom: 0 !important; width: 100%; flex-direction: row !important; justify-content: space-around; padding: 12px 10px 25px 10px !important; border-radius: 20px 20px 0 0 !important; border-top: 1px solid #d6d3d1; background: rgba(255,255,255,0.95) !important; backdrop-filter: blur(10px); }
             .floating-menu button { padding: 10px !important; border-radius: 50% !important; flex-grow: 0; }
             .h-px { width: 1px !important; height: 24px !important; margin: 0 5px !important; }
             .group span { display: none !important; }
             #iconModal { position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; width: 90% !important; max-width: 320px; }
         }
-
-        .card-adder {
-            width: var(--card-width); height: var(--card-height); 
-            border: 2px dashed #a8a29e; background: rgba(255,255,255,0.5);
-            border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            cursor: pointer; color: #78716c;
-        }
+        .card-adder { width: var(--card-width); height: var(--card-height); border: 2px dashed #a8a29e; background: rgba(255,255,255,0.5); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; color: #78716c; }
 
         /* --- PRINT --- */
         @media print {
@@ -289,7 +236,6 @@
                         const wrapper=cardEl.closest('.card-wrapper');
                         if(wrapper){document.querySelectorAll('.card-wrapper').forEach(el=>el.classList.remove('active')); wrapper.classList.add('active');}
                         
-                        // !!! ЛОГИКА СКРОЛЛА ТОЛЬКО ДЛЯ ТЕЛЕФОНОВ/ПЛАНШЕТОВ (< 1024px)
                         if(window.innerWidth <= 1024) {
                             setTimeout(()=>{
                                 if(wrapper) {
@@ -304,21 +250,15 @@
                     field.addEventListener('blur', () => {
                         updateCardData(field);
                         isSwitchingFocus = false; 
-                        
                         setTimeout(() => {
                             if (!isSwitchingFocus) {
                                 deactivateAllCards(); 
-                                
-                                // !!! ЛОГИКА ОТКАТА СКРОЛЛА ТОЛЬКО ДЛЯ ТЕЛЕФОНОВ/ПЛАНШЕТОВ
                                 if(window.innerWidth <= 1024) {
                                     const addBtn = document.querySelector('.card-adder');
                                     if(addBtn) {
                                         const rect = addBtn.getBoundingClientRect();
                                         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                                        window.scrollTo({
-                                            top: rect.top + scrollTop - 5, 
-                                            behavior: 'smooth'
-                                        });
+                                        window.scrollTo({top: rect.top + scrollTop - 5, behavior: 'smooth'});
                                     }
                                 }
                             }
