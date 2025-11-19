@@ -8,14 +8,14 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Шрифты: Убрал Inter, оставил Cinzel и Merriweather -->
+    <!-- Шрифты -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
 
     <style>
         /* --- БАЗА --- */
         body { 
             background-color: #e7e5e4; /* Stone-200 */
-            font-family: 'Cinzel', serif; /* Заменил Inter на Cinzel */
+            font-family: 'Cinzel', serif; 
             color: #1c1917;
             -webkit-font-smoothing: antialiased;
             padding: 40px 20px;
@@ -94,7 +94,7 @@
             font-family: 'Cinzel', serif; font-weight: 900; 
             font-size: 24px; line-height: 1.1; 
             text-transform: uppercase; 
-            color: white; /* Белый цвет при вводе */
+            color: white;
             text-shadow: 1px 1px 0 #000; 
             display: block; 
             word-wrap: break-word; align-self: center; 
@@ -112,7 +112,7 @@
         /* --- SUBTITLE --- */
         .card-subtitle {
             padding: 5px 10px; 
-            font-family: 'Cinzel', serif; /* Заменил Inter на Cinzel */
+            font-family: 'Cinzel', serif; 
             font-size: 10px; font-weight: 700;
             text-transform: uppercase; letter-spacing: 1px; 
             border-bottom: 1px solid #1c1917;
@@ -128,25 +128,22 @@
         /* --- CONTENT --- */
         .card-content {
             flex: 1; padding: 10px 12px; 
-            font-family: 'Merriweather', serif; /* Оставил для читаемости текста */
+            font-family: 'Merriweather', serif; 
             font-size: 11px; line-height: 1.35; 
             color: #1c1917; background-color: #fff; overflow: hidden;
         }
 
-        /* --- PLACEHOLDERS (Логика цветов) --- */
-        
-        /* Базовый placeholder (для белого фона - описание) */
+        /* --- PLACEHOLDERS --- */
         [contenteditable="true"]:empty::before { 
             content: attr(data-placeholder); 
-            color: rgba(0,0,0,0.3); /* Темно-серый для белого фона */
-            font-style: normal; /* Убрал italic */
+            color: rgba(0,0,0,0.3); 
+            font-style: normal;
             pointer-events: none; 
         }
 
-        /* Placeholder для темных фонов (Заголовок и Подзаголовок) */
         .card-title:empty::before,
         .card-subtitle:empty::before {
-            color: rgba(255, 255, 255, 0.5) !important; /* Светло-серый (полупрозрачный белый) */
+            color: rgba(255, 255, 255, 0.5) !important; 
             text-shadow: none;
         }
 
@@ -265,17 +262,18 @@
         <div class="grid grid-cols-4 gap-2 p-3 bg-stone-50" id="modalIconSelector"></div>
     </div>
 
-    <div id="jsonModal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl p-4">
-        <div class="bg-white rounded-xl shadow-2xl border border-stone-200 overflow-hidden flex flex-col max-h-[90vh]">
+    <!-- JSON MODAL (FIXED: Centered & Wider) -->
+    <div id="jsonModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-4xl rounded-xl shadow-2xl border border-stone-200 overflow-hidden flex flex-col max-h-[90vh]">
             <div class="p-4 border-b border-stone-200 flex justify-between items-center bg-stone-50">
                 <h3 class="font-header font-bold text-lg text-stone-800">Импорт JSON текста</h3>
                 <button onclick="closeAllModals()" class="text-stone-400 hover:text-red-500 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
-            <div class="p-6 bg-stone-100">
+            <div class="p-6 bg-stone-100 flex-1 overflow-hidden flex flex-col">
                  <textarea id="jsonInput" 
-                    class="w-full h-64 p-4 font-mono text-xs bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-500 resize-none text-stone-700 shadow-inner"
+                    class="w-full h-64 flex-1 p-4 font-mono text-xs bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-500 resize-none text-stone-700 shadow-inner"
                     placeholder='Вставьте содержимое JSON файла сюда...'></textarea>
             </div>
             <div class="p-4 border-t border-stone-200 bg-stone-50 flex justify-end gap-3">
