@@ -3,417 +3,569 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Конструктор карточек v4.8 (Final)</title>
+    <title>Конструктор карточек (Vitruviy Style)</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Шрифты -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+
     <style>
-        /* --- ОБЩИЕ СТИЛИ --- */
+        /* --- ПЕРЕМЕННЫЕ И БАЗА --- */
         :root {
             --card-width: 63mm;
             --card-height: 88mm;
-            --border-color: #000;
-            --accent-color: #007bff;
+            --stone-dark: #1c1917;
+            --stone-light: #e7e5e4;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Arial', sans-serif; background: #f0f0f0; padding: 20px; }
-        .container { max-width: 1400px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1, h2 { text-align: center; color: #333; margin-bottom: 20px; }
-        
+
+        body { 
+            background-color: var(--stone-light); 
+            font-family: 'Inter', sans-serif; 
+            color: var(--stone-dark);
+            padding: 40px 20px;
+        }
+
+        h1, h2, .font-header { font-family: 'Cinzel', serif; }
+        .font-body { font-family: 'Merriweather', serif; }
+
+        .workspace { max-width: 1400px; margin: 0 auto; }
+
         /* --- СПИСОК КАРТОЧЕК --- */
-        .cards-list { display: grid; grid-template-columns: repeat(auto-fill, var(--card-width)); gap: 15px; justify-content: center; }
-        .card-item { position: relative; }
-        
-        /* --- КАРТОЧКА-ДОБАВЛЯЛКА --- */
-        .card-adder {
-            width: var(--card-width); height: var(--card-height); border: 3px dashed #ccc;
-            border-radius: 5px; display: flex; justify-content: center; align-items: center;
-            font-size: 80px; color: #ccc; cursor: pointer; transition: all 0.3s;
+        .cards-list { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, var(--card-width)); 
+            gap: 30px; /* Увеличил отступ, чтобы было место для кнопок снизу */
+            justify-content: center; 
+            padding-bottom: 60px;
         }
-        .card-adder:hover { color: #aaa; border-color: #aaa; transform: scale(1.02); }
+        
+        .card-wrapper { 
+            position: relative; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+            /* ВАЖНО: Добавляем прозрачный паддинг снизу, чтобы курсор не терял фокус при переходе к кнопкам */
+            padding-bottom: 35px; 
+            margin-bottom: -35px; /* Компенсируем отступ */
+        }
+        .card-wrapper:hover {
+            transform: translateY(-2px);
+            z-index: 10; /* Поднимаем карточку при наведении */
+        }
 
-        /* --- СТИЛИ КАРТОЧКИ --- */
+        /* --- КАРТОЧКА --- */
         .card {
-            border: 3px solid var(--border-color); /* Единая черная рамка */
-            width: var(--card-width); height: var(--card-height); display: flex; flex-direction: column;
-            user-select: none; transition: box-shadow 0.3s, border-color 0.3s;
-            overflow: hidden; 
+            width: var(--card-width); 
+            height: var(--card-height); 
+            background: white;
+            display: flex; 
+            flex-direction: column;
+            border: 2px solid #000; 
+            border-radius: 0; 
+            overflow: hidden;
+            position: relative;
+            z-index: 2; /* Карточка выше кнопок */
         }
-        .card:has([contenteditable="true"]:focus) { box-shadow: 0 0 10px 3px var(--accent-color); }
+
+        .card:has([contenteditable="true"]:focus) { 
+            outline: 4px solid rgba(59, 130, 246, 0.5);
+            outline-offset: 2px;
+        }
+
+        /* Шапка карточки */
         .card-header { 
-            color: white; padding: 12px; display: flex; align-items: center; gap: 10px; 
-            transition: background-color 0.3s, border-color 0.3s;
+            padding: 8px 8px; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            border-bottom: 2px solid #000;
+            height: 64px; 
+            overflow: hidden;
         }
-        .card-title, .card-subtitle { word-break: keep-all; overflow-wrap: normal; }
+
         .card-title {
-            flex: 1; min-width: 0; font-size: 20px; font-weight: bold; text-transform: uppercase;
-            letter-spacing: 1.5px; line-height: 1.2; text-align: left;
+            flex: 1; 
+            font-family: 'Cinzel', serif; 
+            font-weight: 900; 
+            font-size: 24px; /* КРУПНЫЙ СТАРТОВЫЙ РАЗМЕР */
+            line-height: 1.1; 
+            text-transform: uppercase;
+            color: white;
+            text-shadow: 1px 1px 0 #000; 
+            
+            display: block; 
+            max-height: 54px; 
+            overflow: hidden; 
+            word-wrap: break-word;
+            align-self: center; 
         }
+
         .card-icon {
-            flex-shrink: 0; width: 40px; display: flex; justify-content: center; align-items: center;
-            font-size: 28px; cursor: pointer; transition: transform 0.3s; border-radius: 4px;
-        }
-        .card-icon:hover { transform: scale(1.1); background: rgba(255,255,255,0.1); }
-        .card-subtitle {
-            color: #E0E0E0; padding: 6px 12px; font-size: 12px; text-transform: uppercase;
-            letter-spacing: 1px; min-height: 18px; line-height: 1.2;
-            transition: background-color 0.3s, border-color 0.3s;
-        }
-        .card-content {
-            background: #FFFFFF;
-            padding: 15px; flex: 1; font-size: 10px; line-height: 1.5; color: var(--border-color); overflow: auto;
-        }
-        
-        /* --- СТИЛИ ДЛЯ РЕДАКТИРУЕМЫХ ЭЛЕМЕНТОВ --- */
-        [contenteditable="true"] { cursor: text; outline: none; }
-        [contenteditable="true"]:focus { background: rgba(0, 0, 0, 0.05); box-shadow: 0 0 0 2px var(--accent-color) inset; border-radius: 2px; }
-        [contenteditable="true"][data-placeholder]:empty::before { content: attr(data-placeholder); color: #888; pointer-events: none; font-style: italic; opacity: 0.8; }
-        [contenteditable="true"][data-placeholder]:empty:focus::before { content: ""; }
-
-        /* --- УПРАВЛЕНИЕ КАРТОЧКОЙ --- */
-        .card-controls { position: absolute; bottom: -25px; left: 0; right: 0; display: flex; justify-content: center; gap: 5px; opacity: 0; transition: all 0.3s; pointer-events: none; }
-        .card-item:hover .card-controls { opacity: 1; bottom: -10px; pointer-events: all; }
-        .card-controls button { padding: 4px 8px; font-size: 12px; font-weight: normal; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .copy-btn { background: #28a745; }
-        .delete-btn { background: #dc3545; }
-
-        /* --- МОДАЛЬНОЕ ОКНО ВЫБОРА ТИПА --- */
-        #iconModal {
-            position: absolute; display: none; z-index: 1000; background: white; border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 320px; padding: 15px; border: 1px solid #ccc;
-        }
-        #modalBackdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; display: none; }
-        #iconModal h3 { margin-top: 0; margin-bottom: 15px; text-align: center; }
-        .icon-selector { display: flex; flex-direction: column; gap: 10px; }
-        .icon-option {
-            display: flex; align-items: center; gap: 15px; padding: 10px;
-            border: 2px solid #ddd; border-radius: 4px; cursor: pointer; transition: all 0.2s;
-        }
-        .icon-option:hover { border-color: var(--border-color); background: #f5f5f5; }
-        .icon-emoji-box {
-            font-size: 28px; width: 50px; height: 40px; flex-shrink: 0;
+            flex-shrink: 0; 
+            width: 34px; height: 34px;
             display: flex; justify-content: center; align-items: center;
-            border: 2px solid #eee; border-radius: 4px; background: #fafafa;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.4);
+            cursor: pointer; 
         }
-        .icon-label { font-size: 16px; font-weight: bold; }
+        .card-icon svg { width: 22px; height: 22px; stroke: white; stroke-width: 2; }
+        .card-icon:hover { background: rgba(255,255,255,0.3); }
+
+        /* Подзаголовок */
+        .card-subtitle {
+            padding: 4px 10px; 
+            font-family: 'Inter', sans-serif;
+            font-size: 10px; 
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px; 
+            border-bottom: 1px solid #000;
+            color: rgba(255,255,255,0.95);
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        /* Тело карточки */
+        .card-content {
+            flex: 1; 
+            padding: 10px 12px; 
+            font-family: 'Merriweather', serif; 
+            font-size: 11px; 
+            line-height: 1.35; 
+            color: #1c1917; 
+            background-color: #fff;
+            overflow: hidden;
+        }
+
+        /* --- КНОПКА ДОБАВЛЕНИЯ --- */
+        .card-adder {
+            width: var(--card-width); height: var(--card-height); 
+            border: 2px dashed #a8a29e;
+            background: rgba(255,255,255,0.5);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            cursor: pointer; transition: all 0.3s;
+            color: #78716c;
+        }
+        .card-adder:hover { border-color: #1c1917; color: #1c1917; background: white; }
+        .card-adder span { font-size: 40px; margin-bottom: 10px; }
+        .card-adder p { font-family: 'Cinzel', serif; font-size: 12px; font-weight: bold; }
+
+        /* --- УПРАВЛЕНИЕ (ИСПРАВЛЕНО) --- */
+        .card-controls { 
+            position: absolute; 
+            bottom: 0; left: 0; right: 0; /* Привязываем к низу враппера */
+            display: flex; justify-content: center; gap: 10px; 
+            opacity: 0; transition: all 0.2s; 
+            z-index: 100;
+            height: 30px; /* Высота блока кнопок */
+            padding-bottom: 5px;
+        }
+        /* Показываем кнопки при наведении на враппер */
+        .card-wrapper:hover .card-controls { 
+            opacity: 1; 
+            transform: translateY(5px); /* Небольшая анимация */
+        }
         
-        /* --- ОБЩИЕ КНОПКИ --- */
-        .global-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 50px; }
-        .global-buttons button { padding: 12px 24px; background: var(--border-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        .ctrl-btn { 
+            display: flex; justify-content: center; align-items: center; gap: 5px;
+            padding: 4px 12px;
+            font-size: 10px; font-weight: bold; font-family: 'Inter', sans-serif; text-transform: uppercase;
+            border-radius: 4px; border: 1px solid #000; 
+            color: white; cursor: pointer; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .btn-copy { background: #059669; }
+        .btn-copy:hover { background: #047857; }
+        .btn-del { background: #dc2626; }
+        .btn-del:hover { background: #b91c1c; }
+
+        /* --- ГЛОБАЛЬНЫЕ КНОПКИ (Вернули UI-btn) --- */
+        .ui-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 12px 24px; 
+            font-family: 'Cinzel', serif; font-weight: 700; font-size: 14px;
+            border: 2px solid #1c1917; 
+            background: white; color: #1c1917;
+            cursor: pointer; transition: all 0.2s;
+            box-shadow: 4px 4px 0 #a8a29e;
+        }
+        .ui-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #1c1917; }
+        .ui-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0; }
         
-        /* --- СТИЛИ ДЛЯ ПЕЧАТИ --- */
+        .ui-btn.primary { background: #1c1917; color: white; border-color: #1c1917; }
+        .ui-btn.danger { border-color: #dc2626; color: #dc2626; }
+        .ui-btn.danger:hover { background: #dc2626; color: white; box-shadow: 6px 6px 0 #7f1d1d; }
+
+        /* --- МОДАЛКА --- */
+        #iconModal {
+            display: none; position: absolute; z-index: 9999; 
+            background: white; border: 2px solid #1c1917; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            width: 280px; padding: 0;
+        }
+        .modal-header { background: #1c1917; color: white; padding: 8px; text-align: center; font-family: 'Cinzel', serif; font-weight: bold; font-size: 14px; }
+        .icon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 12px; }
+        .icon-option { 
+            aspect-ratio: 1; border: 1px solid #e5e5e5; 
+            display: flex; justify-content: center; align-items: center; 
+            cursor: pointer; transition: all 0.2s; 
+        }
+        .icon-option:hover { background: #1c1917; }
+        .icon-option svg { width: 24px; height: 24px; stroke: #1c1917; }
+        .icon-option:hover svg { stroke: white; }
+
+        [contenteditable="true"]:empty::before { content: attr(data-placeholder); color: rgba(0,0,0,0.3); font-style: italic; pointer-events: none; }
+
+        /* --- ПЕЧАТЬ --- */
         @media print {
             body { background: white; padding: 0; margin: 0; }
-            .container { max-width: none; padding: 0; box-shadow: none; margin: 0; }
-            .global-buttons, h1, h2, .card-controls, .card-adder { display: none !important; }
-            .cards-list { display: grid; grid-template-columns: repeat(3, var(--card-width)); gap: 0; padding: 0; margin: 0; justify-content: center; }
-            .card-item { break-inside: avoid; page-break-inside: avoid; }
-            .card, .card-header, .card-subtitle, .card-content {
-                -webkit-print-color-adjust: exact;
-                color-adjust: exact;
+            .workspace { max-width: none; }
+            h1, h2, .global-buttons, .card-adder, .card-controls, .no-print { display: none !important; }
+            
+            .cards-list { 
+                display: grid; 
+                grid-template-columns: repeat(3, var(--card-width)); 
+                gap: 0; 
+                justify-content: center;
+                margin: 0; padding: 0;
+            }
+            
+            .card-wrapper { 
+                box-shadow: none; margin: 0; padding: 0; 
+                outline: none; /* НЕТ ЛИНИЙ РАЗРЕЗА */
+            }
+            
+            .card, .card-header, .card-subtitle {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
             }
             @page { size: A4 portrait; margin: 10mm; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📝 Конструктор игровых карточек</h1>
-        <h2>Созданные карточки (<span id="cardCount">0</span>):</h2>
+
+    <div class="workspace">
+        <div class="flex flex-col items-center mb-10">
+            <h1 class="text-4xl font-bold text-stone-800 mb-2 text-center uppercase tracking-widest">Мастерская Карт</h1>
+            <div class="h-1 w-32 bg-stone-800"></div>
+            <h2 class="mt-4 text-stone-500 font-header text-sm">Всего карт: <span id="cardCount" class="font-bold text-stone-800">0</span></h2>
+        </div>
+
         <div id="cardsList" class="cards-list"></div>
 
-        <div class="global-buttons">
-            <button onclick="printCards()">🖨️ Печать</button>
-            <button onclick="saveJSON()">💾 Сохранить JSON</button>
-            <button onclick="loadJSON()">📂 Загрузить JSON</button>
-            <button onclick="clearAll()" style="background: #dc3545;">🗑️ Очистить всё</button>
+        <!-- НОВЫЕ КНОПКИ УПРАВЛЕНИЯ -->
+        <div class="global-buttons flex flex-wrap gap-4 justify-center border-t-2 border-stone-300 pt-8">
+            <button class="ui-btn primary" onclick="printCards()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                Печать PDF
+            </button>
+            <button class="ui-btn" onclick="saveJSON()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Сохранить
+            </button>
+            <button class="ui-btn" onclick="loadJSON()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Загрузить
+            </button>
+            <button class="ui-btn danger" onclick="clearAll()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                Сброс
+            </button>
         </div>
     </div>
 
-    <!-- Модальное окно -->
-    <div id="modalBackdrop"></div>
+    <div id="modalBackdrop" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; z-index:40;"></div>
     <div id="iconModal">
-        <h3>Выберите тип карточки</h3>
-        <div class="icon-selector" id="modalIconSelector"></div>
+        <div class="modal-header">ТИП КАРТЫ</div>
+        <div class="icon-grid" id="modalIconSelector"></div>
     </div>
 
     <input type="file" id="fileInput" accept=".json" style="display: none;">
 
     <script>
-        // --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ---
-        let cards = [];
-        const defaultIconTypes = [
-            { icon: '📦', type: 'Предмет' },
-            { icon: '⚡', type: 'Эффект' },
-            { icon: '🎭', type: 'Черта' },
-            { icon: '⭐', type: 'Способность' },
-            { icon: '🐾', type: 'Существо' }
-        ];
-        
-        const CARD_THEME_COLORS = {
-            'Предмет': { main: '#000000', sub: '#333333' },
-            'Эффект': { main: '#4B0082', sub: '#6A5ACD' },
-            'Черта': { main: '#006400', sub: '#2E8B57' },
-            'Способность': { main: '#AF9500', sub: '#D4AF37' },
-            'Существо': { main: '#8B0000', sub: '#A52A2A' }
+        const ICONS = {
+            box: '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line>',
+            sword: '<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"></polyline><line x1="13" y1="19" x2="19" y2="13"></line><line x1="16" y1="16" x2="20" y2="20"></line><line x1="19" y1="21" x2="21" y2="19"></line>',
+            shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>',
+            zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>',
+            skull: '<path d="M12.02 2.84C7.66 2.69 4 6.27 4 10.68 4 12.9 5.11 14.86 6.84 16.13L6 22h12l-.84-5.87C18.89 14.86 20 12.9 20 10.68c0-4.41-3.66-7.99-7.98-7.84z"></path><circle cx="9" cy="11" r="1.5"></circle><circle cx="15" cy="11" r="1.5"></circle>',
+            heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>',
+            star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>',
+            feather: '<path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line>',
+            eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>',
+            scroll: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14 2z"></path><polyline points="14 2 14 8 20 8"></polyline>',
+            potion: '<path d="M10 2h4"></path><path d="M12 2v4"></path><path d="M16 11H8l-2 9h12l-2-9Z"></path><path d="M12 6c-2.21 0-4 2-4 5"></path><path d="M16 11c0-3-1.79-5-4-5"></path>',
+            gem: '<path d="M6 3h12l4 6-10 13L2 9Z"></path><path d="M11 3 8 9l4 13 4-13-3-6"></path><path d="M2 9h20"></path>'
         };
 
-        let modalEditingIndex = null;
-        let ruler;
+        const CARD_TYPES = [
+            { id: 'item', name: 'Предмет', icon: ICONS.box, color: '#1c1917', subColor: '#44403c' },
+            { id: 'weapon', name: 'Оружие', icon: ICONS.sword, color: '#7f1d1d', subColor: '#991b1b' },
+            { id: 'armor', name: 'Броня', icon: ICONS.shield, color: '#0c4a6e', subColor: '#075985' },
+            { id: 'spell', name: 'Заклинание', icon: ICONS.zap, color: '#581c87', subColor: '#6b21a8' },
+            { id: 'trait', name: 'Черта', icon: ICONS.feather, color: '#064e3b', subColor: '#065f46' },
+            { id: 'enemy', name: 'Враг', icon: ICONS.skull, color: '#000000', subColor: '#262626' },
+            { id: 'ability', name: 'Способность', icon: ICONS.star, color: '#713f12', subColor: '#854d0e' },
+            { id: 'note', name: 'Заметка', icon: ICONS.scroll, color: '#4a4a4a', subColor: '#78716c' },
+            { id: 'potion', name: 'Зелье', icon: ICONS.potion, color: '#be185d', subColor: '#db2777' },
+            { id: 'loot', name: 'Лут', icon: ICONS.gem, color: '#0f766e', subColor: '#115e59' }
+        ];
 
-        // --- DOM ЭЛЕМЕНТЫ ---
-        const cardsList = document.getElementById('cardsList');
+        let cards = [];
+        let ruler; // Линейка для измерения текста
+        
+        const cardsContainer = document.getElementById('cardsList');
+        const countEl = document.getElementById('cardCount');
+        const backdrop = document.getElementById('modalBackdrop');
         const fileInput = document.getElementById('fileInput');
-        const cardCountEl = document.getElementById('cardCount');
-        const iconModal = document.getElementById('iconModal');
-        const modalBackdrop = document.getElementById('modalBackdrop');
-        const modalIconSelector = document.getElementById('modalIconSelector');
+        let editingCardIndex = null;
 
         // --- ИНИЦИАЛИЗАЦИЯ ---
         document.addEventListener('DOMContentLoaded', () => {
+            // Создаем линейку (точная копия логики оригинала)
             ruler = document.createElement('span');
-            ruler.style.position = 'absolute'; ruler.style.visibility = 'hidden'; ruler.style.whiteSpace = 'nowrap';
+            ruler.style.position = 'absolute'; 
+            ruler.style.visibility = 'hidden'; 
+            ruler.style.whiteSpace = 'nowrap';
             document.body.appendChild(ruler);
-            renderCardsList();
-            setupModalListeners();
+
+            render();
+            backdrop.addEventListener('click', closeModal);
         });
 
-        // --- ГЕНЕРАЦИЯ HTML ---
-        function createCardHTML(cardData, index) {
-            const { title = '', icon = '📦', type = 'Предмет', subtitle = '', description = '' } = cardData;
-            const theme = CARD_THEME_COLORS[type] || CARD_THEME_COLORS['Предмет'];
-            const formattedDescription = description.replace(/\n/g, '<br>');
-            return `
-                <div class="card" data-index="${index}">
-                    <div class="card-header" style="background-color: ${theme.main}; border-bottom: 3px solid ${theme.main};">
-                        <div class="card-title" contenteditable="true" data-placeholder="[Название]">${title}</div>
-                        <div class="card-icon">${icon}</div>
-                    </div>
-                    <div class="card-subtitle" style="background-color: ${theme.sub}; border-bottom: 3px solid ${theme.main};" contenteditable="true" data-placeholder="[Подзаголовок]">${subtitle}</div>
-                    <div class="card-content" contenteditable="true" data-placeholder="[Описание...]">${formattedDescription}</div>
-                </div>
-                <div class="card-controls">
-                    <button class="copy-btn" onclick="copyCard(${index})">📋 Копировать</button>
-                    <button class="delete-btn" onclick="deleteCard(${index})">🗑️ Удалить</button>
-                </div>`;
-        }
-
         // --- РЕНДЕРИНГ ---
-        function renderCardsList() {
-            const scrollY = window.scrollY;
-            cardsList.innerHTML = '';
-            cardCountEl.textContent = cards.length;
+        function render() {
+            const scroll = window.scrollY;
+            cardsContainer.innerHTML = '';
+            countEl.textContent = cards.length;
 
-            const adder = document.createElement('div');
-            adder.className = 'card-adder'; adder.textContent = '✚'; adder.title = 'Добавить новую карточку';
-            adder.onclick = addNewCard;
-            cardsList.appendChild(adder);
+            const addBtn = document.createElement('div');
+            addBtn.className = 'card-adder';
+            addBtn.innerHTML = '<span>+</span><p>НОВАЯ КАРТА</p>';
+            addBtn.onclick = addCard;
+            cardsContainer.appendChild(addBtn);
 
             cards.forEach((card, index) => {
-                const cardItem = document.createElement('div');
-                cardItem.className = 'card-item';
-                cardItem.innerHTML = createCardHTML(card, index);
-                cardsList.appendChild(cardItem);
+                const typeInfo = CARD_TYPES.find(t => t.id === card.typeId) || CARD_TYPES[0];
+                const wrapper = document.createElement('div');
+                wrapper.className = 'card-wrapper';
+                const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${typeInfo.icon}</svg>`;
+
+                wrapper.innerHTML = `
+                    <div class="card" data-index="${index}">
+                        <div class="card-header" style="background-color: ${typeInfo.color}; border-color: #000;">
+                            <div class="card-title" contenteditable="true" data-placeholder="НАЗВАНИЕ">${card.title}</div>
+                            <div class="card-icon" onclick="openModal(${index}, this)">${svgIcon}</div>
+                        </div>
+                        <div class="card-subtitle" style="background-color: ${typeInfo.subColor}; border-color: #000;" contenteditable="true" data-placeholder="ТИП / ПОДТИП">${card.subtitle}</div>
+                        <div class="card-content" contenteditable="true" data-placeholder="Описание эффекта или свойства...">${card.content}</div>
+                    </div>
+                    <div class="card-controls">
+                        <div class="ctrl-btn btn-copy" onclick="copyCard(${index})" title="Копировать">
+                            КОПИРОВАТЬ
+                        </div>
+                        <div class="ctrl-btn btn-del" onclick="delCard(${index})" title="Удалить">
+                            УДАЛИТЬ
+                        </div>
+                    </div>
+                `;
+                cardsContainer.appendChild(wrapper);
                 
-                adjustFontSize(cardItem.querySelector('.card-title'));
-                adjustFontSize(cardItem.querySelector('.card-subtitle'));
+                // Подгонка шрифта
+                const titleEl = wrapper.querySelector('.card-title');
+                const subEl = wrapper.querySelector('.card-subtitle');
+                // Таймаут нужен, чтобы элемент успел отрендериться в DOM
+                setTimeout(() => {
+                    adjustFontSize(titleEl);
+                    adjustFontSize(subEl);
+                }, 0);
             });
 
-            attachCardListeners();
-            window.scrollTo(0, scrollY);
-        }
-        
-        // --- CRUD ---
-        function addNewCard() {
-            const defaultType = defaultIconTypes[0];
-            const newCard = {
-                title: '', type: defaultType.type, icon: defaultType.icon,
-                subtitle: '', description: ''
-            };
-            cards.unshift(newCard);
-            renderCardsList();
-            const newCardTitleEl = cardsList.querySelector('.card[data-index="0"] .card-title');
-            if (newCardTitleEl) newCardTitleEl.focus();
-        }
-        
-        /**
-         * --- ИЗМЕНЕННАЯ ФУНКЦИЯ ---
-         * Удаляет карточку сразу, без диалогового окна.
-         */
-        function deleteCard(index) {
-            cards.splice(index, 1);
-            renderCardsList();
-        }
-        
-        function copyCard(index) {
-            const cardToCopy = JSON.parse(JSON.stringify(cards[index]));
-            cards.splice(index + 1, 0, cardToCopy);
-            renderCardsList();
+            window.scrollTo(0, scroll);
+            attachListeners();
         }
 
-        // --- СИНХРОНИЗАЦИЯ С DOM ---
-        function updateCardDataFromDOM(element) {
+        function attachListeners() {
+            document.querySelectorAll('.card[data-index]').forEach(cardEl => {
+                cardEl.querySelectorAll('[contenteditable="true"]').forEach(field => {
+                    field.addEventListener('input', () => adjustFontSize(field));
+                    field.addEventListener('blur', () => updateCardData(field));
+                });
+            });
+        }
+
+        function updateCardData(element) {
             const cardEl = element.closest('.card');
             if (!cardEl) return;
             const index = parseInt(cardEl.dataset.index, 10);
             if (isNaN(index) || !cards[index]) return;
-            const title = cardEl.querySelector('.card-title').textContent.trim();
-            const subtitle = cardEl.querySelector('.card-subtitle').textContent.trim();
-            const descriptionHTML = cardEl.querySelector('.card-content').innerHTML;
-            const description = descriptionHTML
-                .replace(/<br\s*[\/]?>/gi, "\n").replace(/<div>/gi, "\n")
-                .replace(/<\/div>/gi, "").replace(/&nbsp;/g, " ")
-                .replace(/<[^>]*>/g, '').trim();
-            
+
+            const title = cardEl.querySelector('.card-title').innerText.trim();
+            const subtitle = cardEl.querySelector('.card-subtitle').innerText.trim();
+            const content = cardEl.querySelector('.card-content').innerHTML; 
+
             cards[index].title = title;
             cards[index].subtitle = subtitle;
-            cards[index].description = description;
-            cardCountEl.textContent = cards.length;
-        }
-        
-        // --- СЛУШАТЕЛИ ---
-        function attachCardListeners() {
-            document.querySelectorAll('.card[data-index]').forEach(cardEl => {
-                cardEl.querySelector('.card-icon').addEventListener('click', (e) => {
-                    openIconModal(e.currentTarget, parseInt(cardEl.dataset.index, 10));
-                });
-                cardEl.querySelectorAll('[contenteditable="true"]').forEach(field => {
-                    field.addEventListener('input', () => adjustFontSize(field));
-                    field.addEventListener('blur', () => updateCardDataFromDOM(field));
-                });
-            });
-        }
-        
-        // --- МОДАЛЬНОЕ ОКНО ---
-        function setupModalListeners() {
-            modalBackdrop.onclick = closeIconModal;
+            cards[index].content = content;
         }
 
-        function openIconModal(targetIcon, index) {
-            modalEditingIndex = index;
-            populateModalSelector();
-            const rect = targetIcon.getBoundingClientRect();
-            iconModal.style.display = 'block';
-            modalBackdrop.style.display = 'block';
-            let top = rect.bottom + window.scrollY + 5;
-            let left = rect.left + window.scrollX - (iconModal.offsetWidth / 2) + (rect.width / 2);
-            if (left < 10) left = 10;
-            if (left + iconModal.offsetWidth > window.innerWidth - 10) {
-                left = window.innerWidth - iconModal.offsetWidth - 10;
-            }
-            iconModal.style.top = `${top}px`;
-            iconModal.style.left = `${left}px`;
-        }
-
-        function closeIconModal() {
-            iconModal.style.display = 'none';
-            modalBackdrop.style.display = 'none';
-            modalEditingIndex = null;
-        }
-
-        function populateModalSelector() {
-            modalIconSelector.innerHTML = '';
-            defaultIconTypes.forEach(({ icon, type }) => {
-                const option = document.createElement('div');
-                option.className = 'icon-option';
-                option.innerHTML = `
-                    <div class="icon-emoji-box">${icon}</div>
-                    <div class="icon-label">${type}</div>`;
-                option.onclick = () => selectCardType(type);
-                modalIconSelector.appendChild(option);
-            });
-        }
-        
-        function selectCardType(selectedType) {
-            if (modalEditingIndex === null || !cards[modalEditingIndex]) return;
-            const typeData = defaultIconTypes.find(t => t.type === selectedType);
-            if (typeData) {
-                cards[modalEditingIndex].type = typeData.type;
-                cards[modalEditingIndex].icon = typeData.icon;
-                renderCardsList();
-            }
-            closeIconModal();
-        }
-        
-        // --- ГЛАВНАЯ УТИЛИТА ---
+        // --- ФУНКЦИЯ ПОДГОНКИ ШРИФТА (ТОЧНАЯ КОПИЯ ЛОГИКИ ОРИГИНАЛА) ---
         function adjustFontSize(element) {
             if (!element || !(element.classList.contains('card-title') || element.classList.contains('card-subtitle'))) return;
+            
             let maxFontSize, minFontSize, maxLines;
+            
+            // Адаптация размеров под наш дизайн
             if (element.classList.contains('card-title')) {
-                maxFontSize = 20; minFontSize = 8; maxLines = 2;
+                maxFontSize = 24; // Стартуем с крупного
+                minFontSize = 10; 
+                maxLines = 2;
             } else {
-                maxFontSize = 12; minFontSize = 8; maxLines = 2;
+                maxFontSize = 12; 
+                minFontSize = 8; 
+                maxLines = 2;
             }
+
             const checkForOverflow = (el) => {
                 const computedStyle = window.getComputedStyle(el);
                 const maxWidth = el.clientWidth;
+                
+                // Синхронизируем линейку со стилями элемента
                 ruler.style.font = computedStyle.font;
                 ruler.style.letterSpacing = computedStyle.letterSpacing;
                 ruler.style.textTransform = computedStyle.textTransform;
+                
+                // Проверка ширины самого длинного слова
                 const words = el.textContent.split(/\s+/);
                 for (const word of words) {
                     ruler.textContent = word;
                     if (ruler.offsetWidth > maxWidth) return true;
                 }
+                
+                // Проверка высоты (кол-во строк)
                 const singleLineHeight = parseFloat(computedStyle.lineHeight);
-                const maxHeight = (singleLineHeight * maxLines) + 1;
+                const maxHeight = (singleLineHeight * maxLines) + 2; // +2px на погрешность
                 return el.scrollHeight > maxHeight;
             };
             
             let currentSize = maxFontSize;
             element.style.fontSize = currentSize + 'px';
+            
+            // Уменьшаем, пока есть переполнение
             while (currentSize > minFontSize && checkForOverflow(element)) {
                 currentSize--;
                 element.style.fontSize = currentSize + 'px';
             }
         }
 
-        // --- ФАЙЛОВЫЕ ОПЕРАЦИИ ---
-        function printCards() {
-            if (cards.length === 0) return alert('Нет карточек для печати!');
-            window.print();
+        // --- ДЕЙСТВИЯ ---
+        function addCard() {
+            cards.unshift({
+                typeId: 'item',
+                title: '',
+                subtitle: '',
+                content: ''
+            });
+            render();
+            const newTitle = document.querySelector('.card[data-index="0"] .card-title');
+            if(newTitle) newTitle.focus();
         }
 
-        function saveJSON() {
-            if (cards.length === 0) return alert('Нет карточек для сохранения!');
-            const dataStr = JSON.stringify(cards, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a'); a.href = url; a.download = 'cards-data.json';
-            a.click(); URL.revokeObjectURL(url);
+        function delCard(index) {
+            cards.splice(index, 1);
+            render();
         }
 
-        function loadJSON() { fileInput.click(); }
-        
-        function handleFileLoad(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const loadedCards = JSON.parse(e.target.result);
-                    if (Array.isArray(loadedCards)) {
-                        loadedCards.forEach(card => {
-                            if (card.type && !card.icon) {
-                                const typeData = defaultIconTypes.find(t => t.type === card.type);
-                                card.icon = typeData ? typeData.icon : '❓';
-                            }
-                        });
-                        if (cards.length === 0 || confirm('Текущие карточки будут заменены. Загрузить новые?')) {
-                            cards = loadedCards;
-                            renderCardsList();
-                            alert('Карточки успешно загружены!');
-                        }
-                    } else { alert('Ошибка: JSON файл имеет неверную структуру (ожидается массив).'); }
-                } catch (err) { alert('Ошибка при чтении файла: ' + err.message);
-                } finally { fileInput.value = ''; }
-            };
-            reader.readAsText(file);
+        function copyCard(index) {
+            const clone = JSON.parse(JSON.stringify(cards[index]));
+            cards.splice(index + 1, 0, clone);
+            render();
         }
-        fileInput.addEventListener('change', handleFileLoad);
 
         function clearAll() {
-            if (confirm('Вы уверены, что хотите удалить ВСЕ карточки? Это действие необратимо.')) {
+            if(confirm("Удалить все карточки?")) {
                 cards = [];
-                renderCardsList();
+                render();
             }
+        }
+
+        // --- МОДАЛКА ---
+        function openModal(index, btnEl) {
+            editingCardIndex = index;
+            const rect = btnEl.getBoundingClientRect();
+            const modal = document.getElementById('iconModal');
+            const grid = document.getElementById('modalIconSelector');
+            grid.innerHTML = '';
+            
+            CARD_TYPES.forEach(type => {
+                const div = document.createElement('div');
+                div.className = 'icon-option';
+                div.title = type.name;
+                div.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${type.icon}</svg>`;
+                div.onclick = () => setCardType(type.id);
+                grid.appendChild(div);
+            });
+
+            backdrop.style.display = 'block';
+            modal.style.display = 'block';
+            let top = rect.bottom + window.scrollY + 5;
+            let left = rect.left + window.scrollX - 240;
+            if (left < 10) left = 10;
+            modal.style.top = top + 'px';
+            modal.style.left = left + 'px';
+        }
+
+        function closeModal() {
+            document.getElementById('iconModal').style.display = 'none';
+            backdrop.style.display = 'none';
+            editingCardIndex = null;
+        }
+
+        function setCardType(typeId) {
+            if (editingCardIndex !== null && cards[editingCardIndex]) {
+                cards[editingCardIndex].typeId = typeId;
+                render();
+            }
+            closeModal();
+        }
+
+        // --- ФАЙЛЫ ---
+        function saveJSON() {
+            if(!cards.length) return alert("Пусто!");
+            const blob = new Blob([JSON.stringify(cards, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'cards_vitruviy.json';
+            a.click();
+        }
+
+        function loadJSON() { document.getElementById('fileInput').click(); }
+        fileInput.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = ev => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if(Array.isArray(data)) {
+                        cards = data.map(c => ({
+                            typeId: c.typeId || 'item',
+                            title: c.title || '',
+                            subtitle: c.subtitle || '',
+                            content: c.content || c.description || ''
+                        }));
+                        render();
+                    }
+                } catch(err) { alert("Ошибка файла"); }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        });
+
+        function printCards() {
+            if(!cards.length) return alert("Нет карт для печати");
+            window.print();
         }
     </script>
 </body>
