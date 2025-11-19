@@ -187,23 +187,45 @@
 
         /* --- PRINT --- */
         @media print {
-            body { background: white; padding: 0; margin: 0; }
-            .workspace { max-width: none; }
-            h1, h2, .floating-menu, .card-adder, .no-print { display: none !important; }
+            /* Сброс отступов страницы */
+            @page { 
+                size: A4 portrait; 
+                margin: 10mm; /* Одинаковый отступ со всех сторон на ВСЕХ страницах */
+            }
+
+            body { 
+                background: white; 
+                padding: 0 !important; 
+                margin: 0 !important; 
+            }
+
+            .workspace { 
+                max-width: none; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+            }
+
+            /* Полностью скрываем интерфейс, чтобы он не занимал место */
+            #uiHeader, .floating-menu, .card-adder, .no-print { 
+                display: none !important; 
+                height: 0;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+            }
             
             .cards-list { 
                 display: grid; 
                 grid-template-columns: repeat(3, var(--card-width)); 
-                gap: 0; /* Вплотную друг к другу */
+                gap: 0; 
                 justify-content: center; 
                 margin: 0 auto; 
                 padding: 0;
             }
             
             .card-wrapper { 
-                /* КЛЮЧЕВОЙ МОМЕНТ: ЗАПРЕТ НА РАЗРЫВ ВНУТРИ КАРТЫ */
-                break-inside: avoid;       /* Стандарт */
-                page-break-inside: avoid;  /* Для старых браузеров */
+                break-inside: avoid;      
+                page-break-inside: avoid; 
                 
                 box-shadow: none !important; 
                 margin: 0; 
@@ -222,9 +244,6 @@
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
-            
-            /* Поля 5мм позволят безопасно разместить 9 карт (3x3) */
-            @page { size: A4 portrait; margin: 5mm; }
         }
     </style>
 </head>
@@ -232,7 +251,8 @@
 
     <!-- MAIN WORKSPACE -->
     <div class="workspace">
-        <div class="flex flex-col items-center mb-10">
+        <!-- Добавил id="uiHeader" чтобы жестко скрывать этот блок при печати -->
+        <div id="uiHeader" class="flex flex-col items-center mb-10">
             <h1 class="text-4xl font-black text-stone-800 mb-2 text-center uppercase tracking-widest font-header">Мастерская Карт</h1>
             <div class="h-1 w-32 bg-stone-800 rounded"></div>
             <h2 class="mt-4 text-stone-500 font-header text-sm font-bold">Всего карт: <span id="cardCount" class="text-stone-800">0</span></h2>
