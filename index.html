@@ -3,35 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Конструктор карточек (Vitruviy Style)</title>
+    <title>Мастерская Карт (Vitruviy Style)</title>
     
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Шрифты -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
 
     <style>
-        /* --- БАЗА --- */
-        :root {
-            --card-width: 63mm;
-            --card-height: 88mm;
-            --stone-dark: #1c1917;
-            --stone-light: #e7e5e4;
-        }
-
+        /* --- БАЗА (Из примера) --- */
         body { 
-            background-color: var(--stone-light); 
+            background-color: #e7e5e4; /* Stone-200 */
             font-family: 'Inter', sans-serif; 
-            color: var(--stone-dark);
+            color: #1c1917;
+            -webkit-font-smoothing: antialiased;
             padding: 40px 20px;
         }
 
-        h1, h2, .font-header { font-family: 'Cinzel', serif; }
-        .font-body { font-family: 'Merriweather', serif; }
+        .font-header { font-family: 'Cinzel', serif; }
+        .font-hand { font-family: 'Merriweather', serif; }
+
+        /* Скроллбар как в примере */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f5f5f4; }
+        ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+
+        /* --- СЕТКА КАРТОЧЕК --- */
+        :root {
+            --card-width: 63mm;
+            --card-height: 88mm;
+        }
 
         .workspace { max-width: 1400px; margin: 0 auto; }
 
-        /* --- СПИСОК КАРТОЧЕК --- */
         .cards-list { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, var(--card-width)); 
@@ -51,15 +57,14 @@
             z-index: 10;
         }
 
-        /* --- КАРТОЧКА --- */
+        /* --- СТИЛИ КАРТОЧКИ --- */
         .card {
             width: var(--card-width); 
             height: var(--card-height); 
             background: white;
             display: flex; 
             flex-direction: column;
-            border: 2px solid #000; 
-            border-radius: 0; 
+            border: 2px solid #1c1917; 
             overflow: hidden;
             position: relative;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -75,11 +80,11 @@
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
         }
 
-        /* --- КОМПОНЕНТЫ КАРТЫ --- */
+        /* --- ВНУТРЕННОСТИ КАРТЫ --- */
         .card-header { 
             padding: 8px 8px; 
             display: flex; align-items: center; gap: 8px; 
-            border-bottom: 2px solid #000;
+            border-bottom: 2px solid #1c1917;
             height: 64px; 
             overflow: hidden;
         }
@@ -107,7 +112,7 @@
             padding: 4px 10px; 
             font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 700;
             text-transform: uppercase; letter-spacing: 1px; 
-            border-bottom: 1px solid #000;
+            border-bottom: 1px solid #1c1917;
             color: rgba(255,255,255,0.95); white-space: nowrap; overflow: hidden;
         }
 
@@ -117,106 +122,55 @@
             color: #1c1917; background-color: #fff; overflow: hidden;
         }
 
-        /* --- УПРАВЛЕНИЕ --- */
+        [contenteditable="true"]:empty::before { content: attr(data-placeholder); color: rgba(0,0,0,0.3); font-style: italic; pointer-events: none; }
+
+        /* --- КНОПКИ НА КАРТЕ (Hover) --- */
         .card-controls {
             position: absolute;
-            bottom: 15px; left: 50%;
+            bottom: 10px; left: 50%;
             transform: translateX(-50%) translateY(20px);
-            display: flex; align-items: center; gap: 0;
-            background: #1c1917; border: 2px solid #fff;
-            box-shadow: 0 10px 15px rgba(0,0,0,0.3);
+            display: flex; align-items: center; gap: 8px;
             opacity: 0; pointer-events: none;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            z-index: 20; overflow: hidden;
+            z-index: 20;
         }
 
         .card-wrapper:hover .card-controls {
             opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: all;
         }
 
-        .ctrl-btn {
-            width: 40px; height: 36px;
+        .mini-btn {
+            width: 32px; height: 32px; border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
-            background: transparent; color: white;
-            cursor: pointer; transition: background 0.2s;
-            border: none; border-right: 1px solid rgba(255,255,255,0.2);
+            background: #1c1917; color: white; border: 1px solid white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            cursor: pointer; transition: transform 0.2s, background 0.2s;
         }
-        .ctrl-btn:last-child { border-right: none; }
-        .ctrl-btn svg { width: 18px; height: 18px; stroke-width: 2; }
-        .ctrl-btn.btn-copy:hover { background: #059669; }
-        .ctrl-btn.btn-del:hover { background: #dc2626; }
+        .mini-btn:hover { transform: scale(1.1); }
+        .mini-btn.del:hover { background: #ef4444; border-color: #ef4444; }
+        .mini-btn.copy:hover { background: #10b981; border-color: #10b981; }
 
         /* --- ADD BUTTON --- */
         .card-adder {
             width: var(--card-width); height: var(--card-height); 
             border: 2px dashed #a8a29e; background: rgba(255,255,255,0.5);
+            border-radius: 8px;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
             cursor: pointer; transition: all 0.3s; color: #78716c;
         }
-        .card-adder:hover { border-color: #1c1917; color: #1c1917; background: white; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .card-adder:hover { border-color: #1c1917; color: #1c1917; background: white; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); transform: translateY(-4px); }
         .card-adder span { font-size: 40px; margin-bottom: 10px; }
         .card-adder p { font-family: 'Cinzel', serif; font-size: 12px; font-weight: bold; }
-
-        /* --- UI COMPONENTS --- */
-        .ui-btn {
-            display: flex; align-items: center; gap: 8px;
-            padding: 12px 24px; 
-            font-family: 'Cinzel', serif; font-weight: 700; font-size: 14px;
-            border: 2px solid #1c1917; background: white; color: #1c1917;
-            cursor: pointer; transition: all 0.2s; box-shadow: 4px 4px 0 #a8a29e;
-        }
-        .ui-btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #1c1917; }
-        .ui-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0; }
-        .ui-btn.primary { background: #1c1917; color: white; border-color: #1c1917; }
-        .ui-btn.danger { border-color: #dc2626; color: #dc2626; }
-        .ui-btn.danger:hover { background: #dc2626; color: white; box-shadow: 6px 6px 0 #7f1d1d; }
-
-        /* --- MODALS --- */
-        #modalBackdrop {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 40;
-        }
-
-        /* Icon Modal */
-        #iconModal {
-            display: none; position: absolute; z-index: 50; background: white; 
-            border: 2px solid #1c1917; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 280px; padding: 0;
-        }
-        .modal-header { background: #1c1917; color: white; padding: 8px; text-align: center; font-family: 'Cinzel', serif; font-weight: bold; font-size: 14px; }
-        .icon-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 12px; }
-        .icon-option { aspect-ratio: 1; border: 1px solid #e5e5e5; display: flex; justify-content: center; align-items: center; cursor: pointer; transition: all 0.2s; }
-        .icon-option:hover { background: #1c1917; }
-        .icon-option svg { width: 24px; height: 24px; stroke: #1c1917; }
-        .icon-option:hover svg { stroke: white; }
-
-        /* JSON Modal */
-        #jsonModal {
-            display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 50; background: white; border: 2px solid #1c1917; 
-            width: 600px; max-width: 95%;
-            box-shadow: 10px 10px 0 rgba(0,0,0,0.2);
-        }
-        .json-modal-body { padding: 20px; }
-        #jsonInput {
-            width: 100%; height: 250px; 
-            border: 2px solid #e7e5e4; padding: 10px;
-            font-family: monospace; font-size: 12px;
-            resize: vertical; outline: none;
-        }
-        #jsonInput:focus { border-color: #1c1917; }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
-
-        [contenteditable="true"]:empty::before { content: attr(data-placeholder); color: rgba(0,0,0,0.3); font-style: italic; pointer-events: none; }
 
         /* --- PRINT --- */
         @media print {
             body { background: white; padding: 0; margin: 0; }
             .workspace { max-width: none; }
-            h1, h2, .global-buttons, .card-adder, .no-print { display: none !important; }
+            h1, h2, .floating-menu, .card-adder, .no-print { display: none !important; }
             
             .cards-list { 
                 display: grid; grid-template-columns: repeat(3, var(--card-width)); 
-                gap: 0; justify-content: center; margin: 0; padding: 0;
+                gap: 4mm; justify-content: center; margin: 0; padding: 0;
             }
             
             .card-wrapper { 
@@ -236,62 +190,75 @@
 </head>
 <body>
 
+    <!-- MAIN WORKSPACE -->
     <div class="workspace">
         <div class="flex flex-col items-center mb-10">
-            <h1 class="text-4xl font-bold text-stone-800 mb-2 text-center uppercase tracking-widest">Мастерская Карт</h1>
-            <div class="h-1 w-32 bg-stone-800"></div>
-            <h2 class="mt-4 text-stone-500 font-header text-sm">Всего карт: <span id="cardCount" class="font-bold text-stone-800">0</span></h2>
+            <h1 class="text-4xl font-black text-stone-800 mb-2 text-center uppercase tracking-widest font-header">Мастерская Карт</h1>
+            <div class="h-1 w-32 bg-stone-800 rounded"></div>
+            <h2 class="mt-4 text-stone-500 font-header text-sm font-bold">Всего карт: <span id="cardCount" class="text-stone-800">0</span></h2>
         </div>
 
         <div id="cardsList" class="cards-list"></div>
-
-        <div class="global-buttons flex flex-wrap gap-4 justify-center border-t-2 border-stone-300 pt-8">
-            <button class="ui-btn primary" onclick="printCards()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                Печать PDF
-            </button>
-            
-            <button class="ui-btn" onclick="saveJSON()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                Сохранить
-            </button>
-            
-            <!-- Группа загрузки -->
-            <button class="ui-btn" onclick="loadJSONFile()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                Файл
-            </button>
-
-            <button class="ui-btn" onclick="openJsonModal()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                Текст
-            </button>
-
-            <button class="ui-btn danger" onclick="clearAll()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                Сброс
-            </button>
-        </div>
     </div>
 
-    <!-- Backdrops & Modals -->
-    <div id="modalBackdrop"></div>
+    <!-- FLOATING MENU (Стиль из примера) -->
+    <div class="floating-menu fixed top-4 right-4 flex flex-col gap-3 bg-white p-3 rounded-xl shadow-2xl z-50 border border-stone-200 transition-opacity">
+        
+        <button onclick="printCards()" title="Печать PDF" class="p-3 bg-stone-800 text-white rounded-lg hover:bg-stone-700 transition-colors shadow-md group relative">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            <!-- Tooltip -->
+            <span class="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-stone-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity pointer-events-none font-bold font-header">Печать</span>
+        </button>
+
+        <button onclick="saveJSON()" title="Скачать JSON" class="p-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 transition-colors shadow-md group relative">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            <span class="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-stone-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity pointer-events-none font-bold font-header">Скачать</span>
+        </button>
+
+        <button onclick="loadJSONFile()" title="Загрузить Файл" class="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors shadow-md group relative">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+             <span class="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-stone-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity pointer-events-none font-bold font-header">Загрузить файл</span>
+        </button>
+
+        <button onclick="openJsonModal()" title="Вставить JSON" class="p-3 bg-amber-600 text-white rounded-lg hover:bg-amber-500 transition-colors shadow-md group relative">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+             <span class="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-stone-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity pointer-events-none font-bold font-header">Вставить текст</span>
+        </button>
+
+        <div class="h-px bg-stone-200 my-1"></div>
+
+        <button onclick="clearAll()" title="Сброс" class="p-3 bg-white text-stone-400 border border-stone-200 rounded-lg hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition-colors shadow-sm group relative">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+             <span class="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-red-600 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity pointer-events-none font-bold font-header">Очистить все</span>
+        </button>
+    </div>
+
+    <!-- MODALS -->
+    <div id="modalBackdrop" class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-40"></div>
     
-    <!-- Icon Selector -->
-    <div id="iconModal">
-        <div class="modal-header">ТИП КАРТЫ</div>
-        <div class="icon-grid" id="modalIconSelector"></div>
+    <!-- Icon Selector (Абсолютное позиционирование) -->
+    <div id="iconModal" class="hidden absolute z-50 bg-white border border-stone-200 shadow-2xl rounded-xl overflow-hidden w-72">
+        <div class="bg-stone-800 text-white p-3 text-center font-header font-bold text-sm tracking-wider">ВЫБОР ТИПА</div>
+        <div class="grid grid-cols-4 gap-2 p-3 bg-stone-50" id="modalIconSelector"></div>
     </div>
 
-    <!-- Text JSON Loader -->
-    <div id="jsonModal">
-        <div class="modal-header">ИМПОРТ JSON ТЕКСТА</div>
-        <div class="json-modal-body">
-            <p class="text-sm text-gray-500 mb-2 font-sans">Вставьте содержимое JSON файла сюда:</p>
-            <textarea id="jsonInput" placeholder='[{"title": "Example"...}]'></textarea>
-            <div class="modal-actions">
-                <button class="ui-btn danger" onclick="closeAllModals()">Отмена</button>
-                <button class="ui-btn primary" onclick="applyJsonText()">Загрузить</button>
+    <!-- Text JSON Loader (Центрированный Modal) -->
+    <div id="jsonModal" class="hidden fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl p-4">
+        <div class="bg-white rounded-xl shadow-2xl border border-stone-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b border-stone-200 flex justify-between items-center bg-stone-50">
+                <h3 class="font-header font-bold text-lg text-stone-800">Импорт JSON текста</h3>
+                <button onclick="closeAllModals()" class="text-stone-400 hover:text-red-500 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="p-6 bg-stone-100">
+                 <textarea id="jsonInput" 
+                    class="w-full h-64 p-4 font-mono text-xs bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-500 resize-none text-stone-700 shadow-inner"
+                    placeholder='Вставьте содержимое JSON файла сюда...'></textarea>
+            </div>
+            <div class="p-4 border-t border-stone-200 bg-stone-50 flex justify-end gap-3">
+                <button onclick="closeAllModals()" class="px-4 py-2 rounded-lg text-sm font-bold text-stone-500 hover:bg-stone-200 transition-colors">Отмена</button>
+                <button onclick="applyJsonText()" class="px-6 py-2 rounded-lg text-sm font-bold bg-stone-800 text-white hover:bg-stone-700 transition-colors shadow-lg">Загрузить</button>
             </div>
         </div>
     </div>
@@ -299,6 +266,7 @@
     <input type="file" id="fileInput" accept=".json" style="display: none;">
 
     <script>
+        // --- ICONS & DATA ---
         const ICONS = {
             box: '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line>',
             sword: '<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"></polyline><line x1="13" y1="19" x2="19" y2="13"></line><line x1="16" y1="16" x2="20" y2="20"></line><line x1="19" y1="21" x2="21" y2="19"></line>',
@@ -352,6 +320,7 @@
             cardsContainer.innerHTML = '';
             countEl.textContent = cards.length;
 
+            // Add Button
             const addBtn = document.createElement('div');
             addBtn.className = 'card-adder';
             addBtn.innerHTML = '<span>+</span><p>НОВАЯ КАРТА</p>';
@@ -366,19 +335,19 @@
 
                 wrapper.innerHTML = `
                     <div class="card" data-index="${index}">
-                        <div class="card-header" style="background-color: ${typeInfo.color}; border-color: #000;">
+                        <div class="card-header" style="background-color: ${typeInfo.color}; border-color: #1c1917;">
                             <div class="card-title" contenteditable="true" data-placeholder="НАЗВАНИЕ">${card.title}</div>
                             <div class="card-icon" onclick="openIconModal(${index}, this)">${svgIcon}</div>
                         </div>
-                        <div class="card-subtitle" style="background-color: ${typeInfo.subColor}; border-color: #000;" contenteditable="true" data-placeholder="ТИП / ПОДТИП">${card.subtitle}</div>
+                        <div class="card-subtitle" style="background-color: ${typeInfo.subColor}; border-color: #1c1917;" contenteditable="true" data-placeholder="ТИП / ПОДТИП">${card.subtitle}</div>
                         <div class="card-content" contenteditable="true" data-placeholder="Описание эффекта или свойства...">${card.content}</div>
                         
                         <div class="card-controls">
-                            <button class="ctrl-btn btn-copy" onclick="copyCard(${index})" title="Копировать">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            <button class="mini-btn copy" onclick="copyCard(${index})" title="Копировать">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                             </button>
-                            <button class="ctrl-btn btn-del" onclick="delCard(${index})" title="Удалить">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            <button class="mini-btn del" onclick="delCard(${index})" title="Удалить">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                             </button>
                         </div>
                     </div>
@@ -425,7 +394,6 @@
             if (!element || !(element.classList.contains('card-title') || element.classList.contains('card-subtitle'))) return;
             
             let maxFontSize, minFontSize, maxLines;
-            
             if (element.classList.contains('card-title')) {
                 maxFontSize = 24; minFontSize = 10; maxLines = 2;
             } else {
@@ -477,7 +445,7 @@
             if(confirm("Удалить все карточки?")) { cards = []; render(); }
         }
 
-        // --- ICON SELECTION MODAL ---
+        // --- ICON MODAL ---
         function openIconModal(index, btnEl) {
             editingCardIndex = index;
             const rect = btnEl.getBoundingClientRect();
@@ -487,17 +455,19 @@
             
             CARD_TYPES.forEach(type => {
                 const div = document.createElement('div');
-                div.className = 'icon-option';
+                div.className = 'w-12 h-12 border border-stone-200 flex justify-center items-center cursor-pointer hover:bg-stone-800 hover:text-white transition-colors rounded';
                 div.title = type.name;
-                div.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${type.icon}</svg>`;
+                div.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${type.icon}</svg>`;
                 div.onclick = () => setCardType(type.id);
                 grid.appendChild(div);
             });
 
             backdrop.style.display = 'block';
             modal.style.display = 'block';
-            let top = rect.bottom + window.scrollY + 5;
-            let left = rect.left + window.scrollX - 240;
+            
+            // Позиционирование
+            let top = rect.bottom + window.scrollY + 10;
+            let left = rect.left + window.scrollX - 250;
             if (left < 10) left = 10;
             modal.style.top = top + 'px';
             modal.style.left = left + 'px';
@@ -511,11 +481,11 @@
             closeAllModals();
         }
 
-        // --- JSON TEXT MODAL ---
+        // --- JSON MODAL ---
         function openJsonModal() {
             document.getElementById('jsonInput').value = '';
             backdrop.style.display = 'block';
-            document.getElementById('jsonModal').style.display = 'block';
+            document.getElementById('jsonModal').style.display = 'flex'; // Flex for centering
             document.getElementById('jsonInput').focus();
         }
 
@@ -538,7 +508,7 @@
             editingCardIndex = null;
         }
 
-        // --- SAVING & LOADING LOGIC ---
+        // --- FILE OPS ---
         function saveJSON() {
             if(!cards.length) return alert("Пусто!");
             const blob = new Blob([JSON.stringify(cards, null, 2)], {type: 'application/json'});
