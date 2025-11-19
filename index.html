@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Мастерская Карт (Mobile Scroll)</title>
+    <title>Мастерская Карт (Ultimate Mobile)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,8 +18,8 @@
             font-family: 'Cinzel', serif; 
             color: #1c1917;
             -webkit-font-smoothing: antialiased;
-            /* Огромный отступ снизу, чтобы был запас для скролла последней карты */
-            padding: 20px 10px 80vh 10px; 
+            /* Большой отступ снизу, чтобы можно было поднять самую нижнюю карту наверх */
+            padding: 20px 10px 85vh 10px; 
             min-height: 100vh;
         }
 
@@ -45,6 +45,8 @@
             position: relative;
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             z-index: 1;
+            /* Важно для программного скролла */
+            scroll-margin-top: 2px; 
         }
 
         @media (hover: hover) {
@@ -74,7 +76,7 @@
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2), 0 10px 15px -3px rgba(0,0,0,0.1);
         }
 
-        /* --- КОМПОНЕНТЫ КАРТЫ --- */
+        /* --- КОМПОНЕНТЫ --- */
         .card-header { 
             padding: 8px 8px; display: flex; align-items: center; gap: 8px; 
             border-bottom: 2px solid #1c1917; min-height: 64px; height: auto;
@@ -109,7 +111,7 @@
         [contenteditable="true"]:empty::before { content: attr(data-placeholder); color: rgba(0,0,0,0.3); pointer-events: none; }
         .card-title:empty::before, .card-subtitle:empty::before { color: rgba(255, 255, 255, 0.5) !important; text-shadow: none; }
 
-        /* --- КНОПКИ --- */
+        /* --- КНОПКИ УПРАВЛЕНИЯ --- */
         .card-controls {
             position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
             display: flex; align-items: center; gap: 12px; z-index: 30;
@@ -127,7 +129,7 @@
         .mini-btn.del { background: #dc2626; }
         .mini-btn.copy { background: #059669; }
 
-        /* --- НАВИГАЦИЯ --- */
+        /* --- МОБИЛЬНОЕ МЕНЮ --- */
         @media (max-width: 768px) {
             .floating-menu {
                 top: auto !important; right: 0 !important; left: 0 !important; bottom: 0 !important;
@@ -142,7 +144,6 @@
             #iconModal { position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; width: 90% !important; max-width: 320px; }
         }
 
-        /* --- CARD ADDER --- */
         .card-adder {
             width: var(--card-width); height: var(--card-height); 
             border: 2px dashed #a8a29e; background: rgba(255,255,255,0.5);
@@ -216,4 +217,145 @@
         document.addEventListener('DOMContentLoaded',()=>{
             render();
             backdrop.addEventListener('click',closeAllModals);
-            document.addEventListener('click',(e)=>{if(!e.target.closest('.card-w
+            document.addEventListener('click',(e)=>{if(!e.target.closest('.card-wrapper')) deactivateAllCards();});
+        });
+
+        function render(){
+            cardsContainer.innerHTML=''; countEl.textContent=cards.length;
+            const addBtn=document.createElement('div'); addBtn.className='card-adder'; addBtn.innerHTML='<span>+</span><p>НОВАЯ КАРТА</p>'; addBtn.onclick=addCard; cardsContainer.appendChild(addBtn);
+            
+            cards.forEach((card,index)=>{
+                const typeInfo=CARD_TYPES.find(t=>t.id===card.typeId)||CARD_TYPES[0];
+                const wrapper=document.createElement('div'); wrapper.className='card-wrapper';
+                // Клик по обертке вызывает тот же активатор
+                wrapper.setAttribute('onclick',`activateCard(event, this)`);
+                wrapper.innerHTML=`
+                    <div class="card" data-index="${index}">
+                        <div class="card-header" style="background-color: ${typeInfo.color}; border-color: #1c1917;">
+                            <div class="card-title" contenteditable="true" data-placeholder="НАЗВАНИЕ">${card.title}</div>
+                            <div class="card-icon" onclick="openIconModal(${index}, this); event.stopPropagation();"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${typeInfo.icon}</svg></div>
+                        </div>
+                        <div class="card-subtitle" style="background-color: ${typeInfo.subColor}; border-color: #1c1917;" contenteditable="true" data-placeholder="ТИП / ПОДТИП">${card.subtitle}</div>
+                        <div class="card-content" contenteditable="true" data-placeholder="Описание эффекта или свойства...">${card.content}</div>
+                        <div class="card-controls">
+                            <button class="mini-btn copy" onclick="copyCard(${index}); event.stopPropagation();" title="Копировать"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
+                            <button class="mini-btn del" onclick="delCard(${index}); event.stopPropagation();" title="Удалить"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                        </div>
+                    </div>`;
+                cardsContainer.appendChild(wrapper);
+                setTimeout(()=>{adjustFontSize(wrapper.querySelector('.card-title')); adjustFontSize(wrapper.querySelector('.card-subtitle'));},0);
+            });
+            attachListeners();
+        }
+
+        // --- АКТИВАЦИЯ И СКРОЛЛ ---
+        
+        function activateCard(e, wrapperEl) {
+            // Активируем визуально
+            document.querySelectorAll('.card-wrapper').forEach(el=>{if(el!==wrapperEl)el.classList.remove('active')});
+            wrapperEl.classList.add('active');
+            
+            // Запускаем прокрутку к ЭТОЙ карте (wrapper)
+            scrollToTarget(wrapperEl);
+        }
+
+        function deactivateAllCards() {
+            document.querySelectorAll('.card-wrapper').forEach(el=>el.classList.remove('active'));
+        }
+
+        // УНИВЕРСАЛЬНАЯ ФУНКЦИЯ ПРОКРУТКИ
+        function scrollToTarget(element) {
+            setTimeout(() => {
+                if(element) {
+                    const rect = element.getBoundingClientRect();
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                    // Целимся в точку: текущий скролл + позиция элемента - 2px (микро-отступ)
+                    window.scrollTo({
+                        top: rect.top + scrollTop - 2, 
+                        behavior: 'smooth'
+                    });
+                }
+            }, 300); // Задержка для клавиатуры
+        }
+
+        function attachListeners(){
+            document.querySelectorAll('.card[data-index]').forEach(cardEl=>{
+                cardEl.querySelectorAll('[contenteditable="true"]').forEach(field=>{
+                    field.addEventListener('input',()=>adjustFontSize(field));
+                    
+                    // FOCUS
+                    field.addEventListener('focus',(e)=>{
+                        isSwitchingFocus = true;
+                        const wrapper = cardEl.closest('.card-wrapper');
+                        if(wrapper) activateCard(e, wrapper); // Используем общую функцию
+                    });
+
+                    // BLUR
+                    field.addEventListener('blur', () => {
+                        updateCardData(field);
+                        isSwitchingFocus = false;
+                        
+                        setTimeout(() => {
+                            // Если фокус не перешел на другое поле
+                            if (!isSwitchingFocus) {
+                                deactivateAllCards();
+                                
+                                // Скроллим к кнопке "Новая карта"
+                                const addBtn = document.querySelector('.card-adder');
+                                scrollToTarget(addBtn);
+                            }
+                        }, 200);
+                    });
+                });
+            });
+        }
+
+        function updateCardData(element){
+            const cardEl=element.closest('.card'); if(!cardEl)return;
+            const index=parseInt(cardEl.dataset.index,10); if(isNaN(index)||!cards[index])return;
+            cards[index].title=cardEl.querySelector('.card-title').innerText.trim();
+            cards[index].subtitle=cardEl.querySelector('.card-subtitle').innerText.trim();
+            cards[index].content=cardEl.querySelector('.card-content').innerHTML;
+        }
+
+        function adjustFontSize(element){
+            if(!element||!(element.classList.contains('card-title')||element.classList.contains('card-subtitle')))return;
+            let maxFontSize=element.classList.contains('card-title')?24:12;
+            let minFontSize=element.classList.contains('card-title')?10:8;
+            let maxLines=element.classList.contains('card-title')?2:4;
+            const checkForOverflow=(el)=>{
+                const computedStyle=window.getComputedStyle(el); const maxWidth=el.clientWidth;
+                ruler.style.font=computedStyle.font; ruler.style.letterSpacing=computedStyle.letterSpacing; ruler.style.textTransform=computedStyle.textTransform;
+                const words=el.textContent.split(/\s+/);
+                for(const word of words){ruler.textContent=word; if(ruler.offsetWidth>maxWidth)return true;}
+                return el.scrollHeight>(parseFloat(computedStyle.lineHeight)*maxLines)+2;
+            };
+            let currentSize=maxFontSize; element.style.fontSize=currentSize+'px';
+            while(currentSize>minFontSize&&checkForOverflow(element)){currentSize--; element.style.fontSize=currentSize+'px';}
+        }
+
+        function addCard(){cards.unshift({typeId:'item',title:'',subtitle:'',content:''}); render(); const newTitle=document.querySelector('.card[data-index="0"] .card-title'); if(newTitle)newTitle.focus();}
+        function delCard(index){cards.splice(index,1); render();}
+        function copyCard(index){const clone=JSON.parse(JSON.stringify(cards[index])); cards.splice(index+1,0,clone); render();}
+        function clearAll(){if(confirm("Удалить все карточки?")){cards=[]; render();}}
+        function openIconModal(index,btnEl){
+            editingCardIndex=index; const rect=btnEl.getBoundingClientRect(); const modal=document.getElementById('iconModal'); const grid=document.getElementById('modalIconSelector'); grid.innerHTML='';
+            CARD_TYPES.forEach(type=>{
+                const div=document.createElement('div'); div.className='w-12 h-12 border border-stone-200 flex justify-center items-center cursor-pointer hover:bg-stone-800 hover:text-white transition-colors rounded'; div.title=type.name; div.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${type.icon}</svg>`;
+                div.onclick=()=>setCardType(type.id); grid.appendChild(div);
+            });
+            backdrop.style.display='block'; modal.style.display='block';
+            if(window.innerWidth>768){let top=rect.bottom+window.scrollY+10; let left=rect.left+window.scrollX-250; if(left<10)left=10; modal.style.top=top+'px'; modal.style.left=left+'px';}else{modal.style.top=''; modal.style.left='';}
+        }
+        function setCardType(typeId){if(editingCardIndex!==null&&cards[editingCardIndex]){cards[editingCardIndex].typeId=typeId; render();} closeAllModals();}
+        function openJsonModal(){document.getElementById('jsonInput').value=''; backdrop.style.display='block'; document.getElementById('jsonModal').style.display='flex'; document.getElementById('jsonInput').focus();}
+        function applyJsonText(){const val=document.getElementById('jsonInput').value.trim(); if(!val)return; try{const data=JSON.parse(val); processLoadedData(data); closeAllModals();}catch(e){alert("Ошибка: Некорректный JSON");}}
+        function closeAllModals(){document.getElementById('iconModal').style.display='none'; document.getElementById('jsonModal').style.display='none'; backdrop.style.display='none'; editingCardIndex=null;}
+        function saveJSON(){if(!cards.length)return alert("Пусто!"); const blob=new Blob([JSON.stringify(cards,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='cards_vitruviy.json'; a.click();}
+        function loadJSONFile(){document.getElementById('fileInput').click();}
+        fileInput.addEventListener('change',e=>{const file=e.target.files[0]; if(!file)return; const reader=new FileReader(); reader.onload=ev=>{try{const data=JSON.parse(ev.target.result); processLoadedData(data);}catch(err){alert("Ошибка файла");}}; reader.readAsText(file); e.target.value='';});
+        function processLoadedData(data){if(Array.isArray(data)){cards=data.map(c=>({typeId:c.typeId||'item',title:c.title||'',subtitle:c.subtitle||'',content:c.content||c.description||''})); render();}else{alert("Неверный формат данных (должен быть массив)");}}
+        function printCards(){if(!cards.length)return alert("Нет карт для печати"); window.print();}
+    </script>
+</body>
+</html>
