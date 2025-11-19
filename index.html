@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Мастерская Карт (Mobile Focus)</title>
+    <title>Мастерская Карт (Max Focus)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,8 +18,8 @@
             font-family: 'Cinzel', serif; 
             color: #1c1917;
             -webkit-font-smoothing: antialiased;
-            /* ОГРОМНЫЙ отступ снизу, чтобы клавиатура не перекрывала контент при скролле */
-            padding: 20px 10px 400px 10px; 
+            /* ОГРОМНЫЙ отступ снизу, чтобы последнюю карту можно было поднять к самому верху */
+            padding: 20px 10px 80vh 10px; 
             min-height: 100vh;
         }
 
@@ -45,19 +45,17 @@
             position: relative;
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             z-index: 1;
+            /* Добавляем scroll-margin для подстраховки */
+            scroll-margin-top: 5px;
         }
 
-        /* Эффект поднятия только для устройств с мышью */
         @media (hover: hover) {
             .card-wrapper:hover { transform: translateY(-8px); z-index: 10; }
             .card-wrapper:hover .card { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
         }
 
-        /* Активное состояние (для мобильных) - поднимаем карту */
         .card-wrapper.active {
             z-index: 20;
-            /* Не поднимаем трансформацией, чтобы не сбивать скролл при фокусе, 
-               но добавляем тень и рамку */
         }
 
         /* --- СТИЛИ КАРТОЧКИ --- */
@@ -75,9 +73,8 @@
             transition: border-color 0.2s, box-shadow 0.2s;
         }
 
-        /* Подсветка активной карточки */
         .card-wrapper.active .card {
-            border-color: #3b82f6; /* Синяя рамка */
+            border-color: #3b82f6; 
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2), 0 10px 15px -3px rgba(0,0,0,0.1);
         }
 
@@ -140,23 +137,19 @@
             transform: translateX(-50%);
             display: flex; align-items: center; gap: 12px;
             z-index: 30;
-            
-            /* ПО УМОЛЧАНИЮ СКРЫТО */
             opacity: 0; 
             pointer-events: none;
             transition: opacity 0.2s, transform 0.2s;
         }
 
-        /* Показ при Hover (десктоп) */
         @media (hover: hover) {
             .card-wrapper:hover .card-controls { opacity: 1; pointer-events: all; }
         }
 
-        /* Показ при Active (мобилки - клик) */
         .card-wrapper.active .card-controls {
             opacity: 1 !important;
             pointer-events: all !important;
-            transform: translateX(-50%) translateY(-5px); /* Чуть приподнять */
+            transform: translateX(-50%) translateY(-5px);
         }
 
         .mini-btn {
@@ -182,18 +175,12 @@
                 background: rgba(255,255,255,0.95) !important;
                 backdrop-filter: blur(10px);
             }
-            .floating-menu button {
-                padding: 10px !important; border-radius: 50% !important; flex-grow: 0;
-            }
+            .floating-menu button { padding: 10px !important; border-radius: 50% !important; flex-grow: 0; }
             .h-px { width: 1px !important; height: 24px !important; margin: 0 5px !important; }
             .group span { display: none !important; }
-            
-            /* Модальное окно */
             #iconModal {
-                position: fixed !important;
-                top: 50% !important; left: 50% !important;
-                transform: translate(-50%, -50%) !important;
-                width: 90% !important; max-width: 320px;
+                position: fixed !important; top: 50% !important; left: 50% !important;
+                transform: translate(-50%, -50%) !important; width: 90% !important; max-width: 320px;
             }
         }
 
@@ -211,15 +198,9 @@
             body { background: white; padding: 0 !important; margin: 0 !important; min-height: 0; }
             .workspace { margin: 0 !important; padding: 0 !important; max-width: none; }
             #uiHeader, .floating-menu, .card-adder, .no-print { display: none !important; }
-            .cards-list { 
-                display: grid; grid-template-columns: repeat(3, var(--card-width)); 
-                gap: 0; margin: 0 auto; 
-            }
-            .card-wrapper { 
-                break-inside: avoid; page-break-inside: avoid;
-                box-shadow: none !important; margin: 0; transform: none !important;
-            }
-            .card { box-shadow: none !important; border-color: #1c1917 !important; } /* Убираем синюю рамку при печати */
+            .cards-list { display: grid; grid-template-columns: repeat(3, var(--card-width)); gap: 0; margin: 0 auto; }
+            .card-wrapper { break-inside: avoid; page-break-inside: avoid; box-shadow: none !important; margin: 0; transform: none !important; }
+            .card { box-shadow: none !important; border-color: #1c1917 !important; }
             .card-controls { display: none !important; }
             .card, .card-header, .card-subtitle { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
@@ -227,67 +208,37 @@
 </head>
 <body>
 
-    <!-- MAIN WORKSPACE -->
     <div class="workspace" id="workspaceArea">
         <div id="uiHeader" class="flex flex-col items-center mb-6">
             <h1 class="text-2xl md:text-4xl font-black text-stone-800 mb-2 text-center uppercase tracking-widest font-header">Мастерская Карт</h1>
             <div class="h-1 w-24 md:w-32 bg-stone-800 rounded"></div>
             <h2 class="mt-2 text-stone-500 font-header text-xs font-bold">Всего карт: <span id="cardCount" class="text-stone-800">0</span></h2>
         </div>
-
         <div id="cardsList" class="cards-list"></div>
     </div>
 
-    <!-- NAVIGATION BAR -->
     <div class="floating-menu fixed top-4 right-4 flex flex-col gap-3 bg-white p-3 rounded-xl shadow-2xl z-50 border border-stone-200 transition-opacity">
-        <button onclick="printCards()" title="Печать PDF" class="p-3 bg-stone-800 text-white rounded-lg hover:bg-stone-700 shadow-md group relative">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-            <span class="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-stone-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none font-bold font-header">Печать</span>
-        </button>
-
-        <button onclick="saveJSON()" title="Скачать JSON" class="p-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 shadow-md group relative">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-            <span class="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-stone-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none font-bold font-header">Скачать</span>
-        </button>
-
-        <button onclick="loadJSONFile()" title="Загрузить Файл" class="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-500 shadow-md group relative">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-             <span class="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-stone-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none font-bold font-header">Файл</span>
-        </button>
-
-        <button onclick="openJsonModal()" title="Вставить JSON" class="p-3 bg-amber-600 text-white rounded-lg hover:bg-amber-500 shadow-md group relative">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-             <span class="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-stone-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none font-bold font-header">Текст</span>
-        </button>
-
+        <button onclick="printCards()" title="Печать PDF" class="p-3 bg-stone-800 text-white rounded-lg hover:bg-stone-700 shadow-md group relative"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
+        <button onclick="saveJSON()" title="Скачать JSON" class="p-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 shadow-md group relative"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg></button>
+        <button onclick="loadJSONFile()" title="Загрузить Файл" class="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-500 shadow-md group relative"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></button>
+        <button onclick="openJsonModal()" title="Вставить JSON" class="p-3 bg-amber-600 text-white rounded-lg hover:bg-amber-500 shadow-md group relative"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></button>
         <div class="h-px bg-stone-200 my-1"></div>
-
-        <button onclick="clearAll()" title="Сброс" class="p-3 bg-white text-stone-400 border border-stone-200 rounded-lg hover:bg-red-50 hover:text-red-500 hover:border-red-200 shadow-sm group relative">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-             <span class="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-red-600 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none font-bold font-header">Сброс</span>
-        </button>
+        <button onclick="clearAll()" title="Сброс" class="p-3 bg-white text-stone-400 border border-stone-200 rounded-lg hover:bg-red-50 hover:text-red-500 hover:border-red-200 shadow-sm group relative"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
     </div>
 
-    <!-- MODALS -->
     <div id="modalBackdrop" class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-40"></div>
-    
     <div id="iconModal" class="hidden absolute z-50 bg-white border border-stone-200 shadow-2xl rounded-xl overflow-hidden w-72">
         <div class="bg-stone-800 text-white p-3 text-center font-header font-bold text-sm tracking-wider">ВЫБОР ТИПА</div>
         <div class="grid grid-cols-4 gap-2 p-3 bg-stone-50" id="modalIconSelector"></div>
     </div>
-
     <div id="jsonModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-4xl rounded-xl shadow-2xl border border-stone-200 overflow-hidden flex flex-col max-h-[80vh]">
             <div class="p-4 border-b border-stone-200 flex justify-between items-center bg-stone-50">
                 <h3 class="font-header font-bold text-lg text-stone-800">Импорт JSON</h3>
-                <button onclick="closeAllModals()" class="text-stone-400 hover:text-red-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
+                <button onclick="closeAllModals()" class="text-stone-400 hover:text-red-500"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
             </div>
             <div class="p-4 bg-stone-100 flex-1 overflow-hidden flex flex-col">
-                 <textarea id="jsonInput" 
-                    class="w-full h-full p-4 font-mono text-xs bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-500 resize-none text-stone-700 shadow-inner"
-                    placeholder='Вставьте JSON...'></textarea>
+                 <textarea id="jsonInput" class="w-full h-full p-4 font-mono text-xs bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-500 resize-none text-stone-700 shadow-inner" placeholder='Вставьте JSON...'></textarea>
             </div>
             <div class="p-4 border-t border-stone-200 bg-stone-50 flex justify-end gap-3">
                 <button onclick="closeAllModals()" class="px-4 py-2 rounded-lg text-sm font-bold text-stone-500 hover:bg-stone-200">Отмена</button>
@@ -295,340 +246,127 @@
             </div>
         </div>
     </div>
-
     <input type="file" id="fileInput" accept=".json" style="display: none;">
 
     <script>
-        const ICONS = {
-            box: '<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line>',
-            sword: '<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"></polyline><line x1="13" y1="19" x2="19" y2="13"></line><line x1="16" y1="16" x2="20" y2="20"></line><line x1="19" y1="21" x2="21" y2="19"></line>',
-            shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>',
-            zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>',
-            skull: '<path d="M12.02 2.84C7.66 2.69 4 6.27 4 10.68 4 12.9 5.11 14.86 6.84 16.13L6 22h12l-.84-5.87C18.89 14.86 20 12.9 20 10.68c0-4.41-3.66-7.99-7.98-7.84z"></path><circle cx="9" cy="11" r="1.5"></circle><circle cx="15" cy="11" r="1.5"></circle>',
-            heart: '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>',
-            star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>',
-            feather: '<path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line>',
-            eye: '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>',
-            scroll: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14 2z"></path><polyline points="14 2 14 8 20 8"></polyline>',
-            potion: '<path d="M10 2h4"></path><path d="M12 2v4"></path><path d="M16 11H8l-2 9h12l-2-9Z"></path><path d="M12 6c-2.21 0-4 2-4 5"></path><path d="M16 11c0-3-1.79-5-4-5"></path>',
-            gem: '<path d="M6 3h12l4 6-10 13L2 9Z"></path><path d="M11 3 8 9l4 13 4-13-3-6"></path><path d="M2 9h20"></path>'
-        };
+        const ICONS={box:'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line>',sword:'<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"></polyline><line x1="13" y1="19" x2="19" y2="13"></line><line x1="16" y1="16" x2="20" y2="20"></line><line x1="19" y1="21" x2="21" y2="19"></line>',shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>',zap:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>',skull:'<path d="M12.02 2.84C7.66 2.69 4 6.27 4 10.68 4 12.9 5.11 14.86 6.84 16.13L6 22h12l-.84-5.87C18.89 14.86 20 12.9 20 10.68c0-4.41-3.66-7.99-7.98-7.84z"></path><circle cx="9" cy="11" r="1.5"></circle><circle cx="15" cy="11" r="1.5"></circle>',heart:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>',star:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>',feather:'<path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line>',eye:'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>',scroll:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14 2z"></path><polyline points="14 2 14 8 20 8"></polyline>',potion:'<path d="M10 2h4"></path><path d="M12 2v4"></path><path d="M16 11H8l-2 9h12l-2-9Z"></path><path d="M12 6c-2.21 0-4 2-4 5"></path><path d="M16 11c0-3-1.79-5-4-5"></path>',gem:'<path d="M6 3h12l4 6-10 13L2 9Z"></path><path d="M11 3 8 9l4 13 4-13-3-6"></path><path d="M2 9h20"></path>'};
+        const CARD_TYPES=[{id:'item',name:'Предмет',icon:ICONS.box,color:'#1c1917',subColor:'#44403c'},{id:'weapon',name:'Оружие',icon:ICONS.sword,color:'#7f1d1d',subColor:'#991b1b'},{id:'armor',name:'Броня',icon:ICONS.shield,color:'#0c4a6e',subColor:'#075985'},{id:'effect',name:'Эффект',icon:ICONS.zap,color:'#581c87',subColor:'#6b21a8'},{id:'trait',name:'Черта',icon:ICONS.feather,color:'#064e3b',subColor:'#065f46'},{id:'enemy',name:'Враг',icon:ICONS.skull,color:'#000000',subColor:'#262626'},{id:'ability',name:'Способность',icon:ICONS.star,color:'#713f12',subColor:'#854d0e'},{id:'note',name:'Заметка',icon:ICONS.scroll,color:'#4a4a4a',subColor:'#78716c'},{id:'potion',name:'Зелье',icon:ICONS.potion,color:'#be185d',subColor:'#db2777'},{id:'loot',name:'Лут',icon:ICONS.gem,color:'#0f766e',subColor:'#115e59'}];
+        let cards=[]; const cardsContainer=document.getElementById('cardsList'); const countEl=document.getElementById('cardCount'); const backdrop=document.getElementById('modalBackdrop'); const fileInput=document.getElementById('fileInput'); let editingCardIndex=null; let ruler=document.createElement('span'); ruler.style.position='absolute'; ruler.style.visibility='hidden'; ruler.style.whiteSpace='nowrap'; document.body.appendChild(ruler);
 
-        const CARD_TYPES = [
-            { id: 'item', name: 'Предмет', icon: ICONS.box, color: '#1c1917', subColor: '#44403c' },
-            { id: 'weapon', name: 'Оружие', icon: ICONS.sword, color: '#7f1d1d', subColor: '#991b1b' },
-            { id: 'armor', name: 'Броня', icon: ICONS.shield, color: '#0c4a6e', subColor: '#075985' },
-            { id: 'effect', name: 'Эффект', icon: ICONS.zap, color: '#581c87', subColor: '#6b21a8' },
-            { id: 'trait', name: 'Черта', icon: ICONS.feather, color: '#064e3b', subColor: '#065f46' },
-            { id: 'enemy', name: 'Враг', icon: ICONS.skull, color: '#000000', subColor: '#262626' },
-            { id: 'ability', name: 'Способность', icon: ICONS.star, color: '#713f12', subColor: '#854d0e' },
-            { id: 'note', name: 'Заметка', icon: ICONS.scroll, color: '#4a4a4a', subColor: '#78716c' },
-            { id: 'potion', name: 'Зелье', icon: ICONS.potion, color: '#be185d', subColor: '#db2777' },
-            { id: 'loot', name: 'Лут', icon: ICONS.gem, color: '#0f766e', subColor: '#115e59' }
-        ];
-
-        let cards = [];
-        let ruler; 
-        
-        const cardsContainer = document.getElementById('cardsList');
-        const countEl = document.getElementById('cardCount');
-        const backdrop = document.getElementById('modalBackdrop');
-        const fileInput = document.getElementById('fileInput');
-        let editingCardIndex = null;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            ruler = document.createElement('span');
-            ruler.style.position = 'absolute'; 
-            ruler.style.visibility = 'hidden'; 
-            ruler.style.whiteSpace = 'nowrap';
-            document.body.appendChild(ruler);
-
+        document.addEventListener('DOMContentLoaded',()=>{
             render();
-            backdrop.addEventListener('click', closeAllModals);
-            
-            // Закрытие активной карты при клике вне её
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.card-wrapper')) {
-                    deactivateAllCards();
-                }
-            });
+            backdrop.addEventListener('click',closeAllModals);
+            document.addEventListener('click',(e)=>{if(!e.target.closest('.card-wrapper')) deactivateAllCards();});
         });
 
-        function render() {
-            const scroll = window.scrollY;
-            cardsContainer.innerHTML = '';
-            countEl.textContent = cards.length;
-
-            const addBtn = document.createElement('div');
-            addBtn.className = 'card-adder';
-            addBtn.innerHTML = '<span>+</span><p>НОВАЯ КАРТА</p>';
-            addBtn.onclick = addCard;
-            cardsContainer.appendChild(addBtn);
-
-            cards.forEach((card, index) => {
-                const typeInfo = CARD_TYPES.find(t => t.id === card.typeId) || CARD_TYPES[0];
-                const wrapper = document.createElement('div');
-                wrapper.className = 'card-wrapper';
-                // Добавляем обработчик клика на саму карточку для активации кнопок
-                wrapper.setAttribute('onclick', `activateCard(event, this)`);
-                
-                const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${typeInfo.icon}</svg>`;
-
-                wrapper.innerHTML = `
+        function render(){
+            cardsContainer.innerHTML=''; countEl.textContent=cards.length;
+            const addBtn=document.createElement('div'); addBtn.className='card-adder'; addBtn.innerHTML='<span>+</span><p>НОВАЯ КАРТА</p>'; addBtn.onclick=addCard; cardsContainer.appendChild(addBtn);
+            cards.forEach((card,index)=>{
+                const typeInfo=CARD_TYPES.find(t=>t.id===card.typeId)||CARD_TYPES[0];
+                const wrapper=document.createElement('div'); wrapper.className='card-wrapper';
+                wrapper.setAttribute('onclick',`activateCard(event, this)`);
+                wrapper.innerHTML=`
                     <div class="card" data-index="${index}">
                         <div class="card-header" style="background-color: ${typeInfo.color}; border-color: #1c1917;">
                             <div class="card-title" contenteditable="true" data-placeholder="НАЗВАНИЕ">${card.title}</div>
-                            <div class="card-icon" onclick="openIconModal(${index}, this); event.stopPropagation();">${svgIcon}</div>
+                            <div class="card-icon" onclick="openIconModal(${index}, this); event.stopPropagation();"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${typeInfo.icon}</svg></div>
                         </div>
                         <div class="card-subtitle" style="background-color: ${typeInfo.subColor}; border-color: #1c1917;" contenteditable="true" data-placeholder="ТИП / ПОДТИП">${card.subtitle}</div>
                         <div class="card-content" contenteditable="true" data-placeholder="Описание эффекта или свойства...">${card.content}</div>
-                        
                         <div class="card-controls">
-                            <button class="mini-btn copy" onclick="copyCard(${index}); event.stopPropagation();" title="Копировать">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            </button>
-                            <button class="mini-btn del" onclick="delCard(${index}); event.stopPropagation();" title="Удалить">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                            </button>
+                            <button class="mini-btn copy" onclick="copyCard(${index}); event.stopPropagation();" title="Копировать"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
+                            <button class="mini-btn del" onclick="delCard(${index}); event.stopPropagation();" title="Удалить"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 cardsContainer.appendChild(wrapper);
-                
-                setTimeout(() => {
-                    const titleEl = wrapper.querySelector('.card-title');
-                    const subEl = wrapper.querySelector('.card-subtitle');
-                    adjustFontSize(titleEl);
-                    adjustFontSize(subEl);
-                }, 0);
+                setTimeout(()=>{
+                    adjustFontSize(wrapper.querySelector('.card-title'));
+                    adjustFontSize(wrapper.querySelector('.card-subtitle'));
+                },0);
             });
-
-            // window.scrollTo(0, scroll); // Убираем, чтобы не прыгало
             attachListeners();
         }
 
-        // --- ЛОГИКА АКТИВАЦИИ И СКРОЛЛА ---
-        function activateCard(e, wrapperEl) {
-            // Если клик был по input/contenteditable, позволим ему сфокусироваться, но также активируем карту
-            // e.stopPropagation() не делаем, чтобы click document не сработал
-            // Но нам нужно предотвратить деактивацию
-            
-            const isAlreadyActive = wrapperEl.classList.contains('active');
-            
-            // Снимаем активность со всех других
-            document.querySelectorAll('.card-wrapper').forEach(el => {
-                if(el !== wrapperEl) el.classList.remove('active');
-            });
-
-            // Добавляем активность текущей
+        function activateCard(e,wrapperEl){
+            document.querySelectorAll('.card-wrapper').forEach(el=>{if(el!==wrapperEl)el.classList.remove('active')});
             wrapperEl.classList.add('active');
         }
+        function deactivateAllCards(){document.querySelectorAll('.card-wrapper').forEach(el=>el.classList.remove('active'));}
 
-        function deactivateAllCards() {
-            document.querySelectorAll('.card-wrapper').forEach(el => el.classList.remove('active'));
-        }
-
-        function attachListeners() {
-            document.querySelectorAll('.card[data-index]').forEach(cardEl => {
-                cardEl.querySelectorAll('[contenteditable="true"]').forEach(field => {
-                    field.addEventListener('input', () => adjustFontSize(field));
-                    field.addEventListener('blur', () => updateCardData(field));
-                    
-                    // СКРОЛЛ К ЭЛЕМЕНТУ ПРИ ФОКУСЕ
-                    field.addEventListener('focus', (e) => {
-                        // Активируем визуально карту
-                        const wrapper = cardEl.closest('.card-wrapper');
-                        if(wrapper) {
-                             document.querySelectorAll('.card-wrapper').forEach(el => el.classList.remove('active'));
-                             wrapper.classList.add('active');
-                        }
-
-                        // Ждем пока выедет клавиатура (300мс)
-                        setTimeout(() => {
-                            e.target.scrollIntoView({behavior: "smooth", block: "center"});
-                        }, 300);
+        function attachListeners(){
+            document.querySelectorAll('.card[data-index]').forEach(cardEl=>{
+                cardEl.querySelectorAll('[contenteditable="true"]').forEach(field=>{
+                    field.addEventListener('input',()=>adjustFontSize(field));
+                    field.addEventListener('blur',()=>updateCardData(field));
+                    field.addEventListener('focus',(e)=>{
+                        const wrapper=cardEl.closest('.card-wrapper');
+                        if(wrapper){document.querySelectorAll('.card-wrapper').forEach(el=>el.classList.remove('active')); wrapper.classList.add('active');}
+                        setTimeout(()=>{
+                            // ЖЕСТКИЙ СКРОЛЛ К САМОМУ ВЕРХУ (с отступом 5px)
+                            if(wrapper) {
+                                const rect = wrapper.getBoundingClientRect();
+                                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                window.scrollTo({
+                                    top: rect.top + scrollTop - 5, 
+                                    behavior: 'smooth'
+                                });
+                            }
+                        },300);
                     });
                 });
             });
         }
 
-        function updateCardData(element) {
-            const cardEl = element.closest('.card');
-            if (!cardEl) return;
-            const index = parseInt(cardEl.dataset.index, 10);
-            if (isNaN(index) || !cards[index]) return;
-
-            const title = cardEl.querySelector('.card-title').innerText.trim();
-            const subtitle = cardEl.querySelector('.card-subtitle').innerText.trim();
-            const content = cardEl.querySelector('.card-content').innerHTML; 
-
-            cards[index].title = title;
-            cards[index].subtitle = subtitle;
-            cards[index].content = content;
+        function updateCardData(element){
+            const cardEl=element.closest('.card'); if(!cardEl)return;
+            const index=parseInt(cardEl.dataset.index,10); if(isNaN(index)||!cards[index])return;
+            cards[index].title=cardEl.querySelector('.card-title').innerText.trim();
+            cards[index].subtitle=cardEl.querySelector('.card-subtitle').innerText.trim();
+            cards[index].content=cardEl.querySelector('.card-content').innerHTML;
         }
 
-        function adjustFontSize(element) {
-            if (!element || !(element.classList.contains('card-title') || element.classList.contains('card-subtitle'))) return;
-            
-            let maxFontSize, minFontSize, maxLines;
-            if (element.classList.contains('card-title')) {
-                maxFontSize = 24; minFontSize = 10; maxLines = 2;
-            } else {
-                maxFontSize = 12; minFontSize = 8; maxLines = 4; 
-            }
-
-            const checkForOverflow = (el) => {
-                const computedStyle = window.getComputedStyle(el);
-                const maxWidth = el.clientWidth;
-                ruler.style.font = computedStyle.font;
-                ruler.style.letterSpacing = computedStyle.letterSpacing;
-                ruler.style.textTransform = computedStyle.textTransform;
-                
-                const words = el.textContent.split(/\s+/);
-                for (const word of words) {
-                    ruler.textContent = word;
-                    if (ruler.offsetWidth > maxWidth) return true;
-                }
-                const singleLineHeight = parseFloat(computedStyle.lineHeight);
-                const maxHeight = (singleLineHeight * maxLines) + 2;
-                return el.scrollHeight > maxHeight;
+        function adjustFontSize(element){
+            if(!element||!(element.classList.contains('card-title')||element.classList.contains('card-subtitle')))return;
+            let maxFontSize=element.classList.contains('card-title')?24:12;
+            let minFontSize=element.classList.contains('card-title')?10:8;
+            let maxLines=element.classList.contains('card-title')?2:4;
+            const checkForOverflow=(el)=>{
+                const computedStyle=window.getComputedStyle(el); const maxWidth=el.clientWidth;
+                ruler.style.font=computedStyle.font; ruler.style.letterSpacing=computedStyle.letterSpacing; ruler.style.textTransform=computedStyle.textTransform;
+                const words=el.textContent.split(/\s+/);
+                for(const word of words){ruler.textContent=word; if(ruler.offsetWidth>maxWidth)return true;}
+                return el.scrollHeight>(parseFloat(computedStyle.lineHeight)*maxLines)+2;
             };
-            
-            let currentSize = maxFontSize;
-            element.style.fontSize = currentSize + 'px';
-            while (currentSize > minFontSize && checkForOverflow(element)) {
-                currentSize--;
-                element.style.fontSize = currentSize + 'px';
-            }
+            let currentSize=maxFontSize; element.style.fontSize=currentSize+'px';
+            while(currentSize>minFontSize&&checkForOverflow(element)){currentSize--; element.style.fontSize=currentSize+'px';}
         }
 
-        function addCard() {
-            cards.unshift({ typeId: 'item', title: '', subtitle: '', content: '' });
-            render();
-            const newTitle = document.querySelector('.card[data-index="0"] .card-title');
-            if(newTitle) newTitle.focus();
-        }
-
-        function delCard(index) {
-            cards.splice(index, 1); render();
-        }
-
-        function copyCard(index) {
-            const clone = JSON.parse(JSON.stringify(cards[index]));
-            cards.splice(index + 1, 0, clone); render();
-        }
-
-        function clearAll() {
-            if(confirm("Удалить все карточки?")) { cards = []; render(); }
-        }
-
-        function openIconModal(index, btnEl) {
-            editingCardIndex = index;
-            const rect = btnEl.getBoundingClientRect();
-            const modal = document.getElementById('iconModal');
-            const grid = document.getElementById('modalIconSelector');
-            grid.innerHTML = '';
-            
-            CARD_TYPES.forEach(type => {
-                const div = document.createElement('div');
-                div.className = 'w-12 h-12 border border-stone-200 flex justify-center items-center cursor-pointer hover:bg-stone-800 hover:text-white transition-colors rounded';
-                div.title = type.name;
-                div.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${type.icon}</svg>`;
-                div.onclick = () => setCardType(type.id);
-                grid.appendChild(div);
+        function addCard(){cards.unshift({typeId:'item',title:'',subtitle:'',content:''}); render(); const newTitle=document.querySelector('.card[data-index="0"] .card-title'); if(newTitle)newTitle.focus();}
+        function delCard(index){cards.splice(index,1); render();}
+        function copyCard(index){const clone=JSON.parse(JSON.stringify(cards[index])); cards.splice(index+1,0,clone); render();}
+        function clearAll(){if(confirm("Удалить все карточки?")){cards=[]; render();}}
+        function openIconModal(index,btnEl){
+            editingCardIndex=index; const rect=btnEl.getBoundingClientRect(); const modal=document.getElementById('iconModal'); const grid=document.getElementById('modalIconSelector'); grid.innerHTML='';
+            CARD_TYPES.forEach(type=>{
+                const div=document.createElement('div'); div.className='w-12 h-12 border border-stone-200 flex justify-center items-center cursor-pointer hover:bg-stone-800 hover:text-white transition-colors rounded'; div.title=type.name; div.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${type.icon}</svg>`;
+                div.onclick=()=>setCardType(type.id); grid.appendChild(div);
             });
-
-            backdrop.style.display = 'block';
-            modal.style.display = 'block';
-            
-            if (window.innerWidth > 768) {
-                let top = rect.bottom + window.scrollY + 10;
-                let left = rect.left + window.scrollX - 250;
-                if (left < 10) left = 10;
-                modal.style.top = top + 'px';
-                modal.style.left = left + 'px';
-            } else {
-                modal.style.top = ''; modal.style.left = '';
-            }
+            backdrop.style.display='block'; modal.style.display='block';
+            if(window.innerWidth>768){
+                let top=rect.bottom+window.scrollY+10; let left=rect.left+window.scrollX-250;
+                if(left<10)left=10; modal.style.top=top+'px'; modal.style.left=left+'px';
+            }else{modal.style.top=''; modal.style.left='';}
         }
-
-        function setCardType(typeId) {
-            if (editingCardIndex !== null && cards[editingCardIndex]) {
-                cards[editingCardIndex].typeId = typeId;
-                render();
-            }
-            closeAllModals();
-        }
-
-        function openJsonModal() {
-            document.getElementById('jsonInput').value = '';
-            backdrop.style.display = 'block';
-            document.getElementById('jsonModal').style.display = 'flex';
-            document.getElementById('jsonInput').focus();
-        }
-
-        function applyJsonText() {
-            const val = document.getElementById('jsonInput').value.trim();
-            if (!val) return;
-            try {
-                const data = JSON.parse(val);
-                processLoadedData(data);
-                closeAllModals();
-            } catch (e) {
-                alert("Ошибка: Некорректный JSON");
-            }
-        }
-
-        function closeAllModals() {
-            document.getElementById('iconModal').style.display = 'none';
-            document.getElementById('jsonModal').style.display = 'none';
-            backdrop.style.display = 'none';
-            editingCardIndex = null;
-        }
-
-        function saveJSON() {
-            if(!cards.length) return alert("Пусто!");
-            const blob = new Blob([JSON.stringify(cards, null, 2)], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = 'cards_vitruviy.json';
-            a.click();
-        }
-
-        function loadJSONFile() { document.getElementById('fileInput').click(); }
-        
-        fileInput.addEventListener('change', e => {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = ev => {
-                try {
-                    const data = JSON.parse(ev.target.result);
-                    processLoadedData(data);
-                } catch(err) { alert("Ошибка файла"); }
-            };
-            reader.readAsText(file);
-            e.target.value = '';
-        });
-
-        function processLoadedData(data) {
-            if(Array.isArray(data)) {
-                cards = data.map(c => ({
-                    typeId: c.typeId || 'item',
-                    title: c.title || '',
-                    subtitle: c.subtitle || '',
-                    content: c.content || c.description || ''
-                }));
-                render();
-            } else {
-                alert("Неверный формат данных (должен быть массив)");
-            }
-        }
-
-        function printCards() {
-            if(!cards.length) return alert("Нет карт для печати");
-            window.print();
-        }
+        function setCardType(typeId){if(editingCardIndex!==null&&cards[editingCardIndex]){cards[editingCardIndex].typeId=typeId; render();} closeAllModals();}
+        function openJsonModal(){document.getElementById('jsonInput').value=''; backdrop.style.display='block'; document.getElementById('jsonModal').style.display='flex'; document.getElementById('jsonInput').focus();}
+        function applyJsonText(){const val=document.getElementById('jsonInput').value.trim(); if(!val)return; try{const data=JSON.parse(val); processLoadedData(data); closeAllModals();}catch(e){alert("Ошибка: Некорректный JSON");}}
+        function closeAllModals(){document.getElementById('iconModal').style.display='none'; document.getElementById('jsonModal').style.display='none'; backdrop.style.display='none'; editingCardIndex=null;}
+        function saveJSON(){if(!cards.length)return alert("Пусто!"); const blob=new Blob([JSON.stringify(cards,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='cards_vitruviy.json'; a.click();}
+        function loadJSONFile(){document.getElementById('fileInput').click();}
+        fileInput.addEventListener('change',e=>{const file=e.target.files[0]; if(!file)return; const reader=new FileReader(); reader.onload=ev=>{try{const data=JSON.parse(ev.target.result); processLoadedData(data);}catch(err){alert("Ошибка файла");}}; reader.readAsText(file); e.target.value='';});
+        function processLoadedData(data){if(Array.isArray(data)){cards=data.map(c=>({typeId:c.typeId||'item',title:c.title||'',subtitle:c.subtitle||'',content:c.content||c.description||''})); render();}else{alert("Неверный формат данных (должен быть массив)");}}
+        function printCards(){if(!cards.length)return alert("Нет карт для печати"); window.print();}
     </script>
 </body>
 </html>
