@@ -191,24 +191,26 @@
             .workspace { max-width: none; }
             h1, h2, .floating-menu, .card-adder, .no-print { display: none !important; }
             
-            /* ГЛАВНЫЕ ИЗМЕНЕНИЯ ДЛЯ ПЛОТНОЙ ПЕЧАТИ */
             .cards-list { 
                 display: grid; 
                 grid-template-columns: repeat(3, var(--card-width)); 
-                gap: 0; /* Убираем отступ между картами */
+                gap: 0; /* Вплотную друг к другу */
                 justify-content: center; 
                 margin: 0 auto; 
                 padding: 0;
             }
             
             .card-wrapper { 
+                /* КЛЮЧЕВОЙ МОМЕНТ: ЗАПРЕТ НА РАЗРЫВ ВНУТРИ КАРТЫ */
+                break-inside: avoid;       /* Стандарт */
+                page-break-inside: avoid;  /* Для старых браузеров */
+                
                 box-shadow: none !important; 
                 margin: 0; 
                 padding: 0; 
                 transform: none !important;
             }
             
-            /* Убеждаемся, что границы не мешают стыковке */
             .card { 
                 box-shadow: none !important; 
                 margin: 0;
@@ -221,7 +223,7 @@
                 print-color-adjust: exact !important;
             }
             
-            /* Настраиваем поля страницы, чтобы вместилось 3 в ряд без отступов */
+            /* Поля 5мм позволят безопасно разместить 9 карт (3x3) */
             @page { size: A4 portrait; margin: 5mm; }
         }
     </style>
@@ -514,7 +516,6 @@
         function openJsonModal() {
             document.getElementById('jsonInput').value = '';
             backdrop.style.display = 'block';
-            // Теперь модальное окно flex и по центру
             document.getElementById('jsonModal').style.display = 'flex';
             document.getElementById('jsonInput').focus();
         }
