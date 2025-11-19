@@ -8,21 +8,21 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Шрифты -->
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;800&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+    <!-- Шрифты: Убрал Inter, оставил Cinzel и Merriweather -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
 
     <style>
         /* --- БАЗА --- */
         body { 
             background-color: #e7e5e4; /* Stone-200 */
-            font-family: 'Inter', sans-serif; 
+            font-family: 'Cinzel', serif; /* Заменил Inter на Cinzel */
             color: #1c1917;
             -webkit-font-smoothing: antialiased;
             padding: 40px 20px;
         }
 
         .font-header { font-family: 'Cinzel', serif; }
-        .font-hand { font-family: 'Merriweather', serif; }
+        .font-body { font-family: 'Merriweather', serif; }
 
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #f5f5f4; }
@@ -84,8 +84,8 @@
             padding: 8px 8px; 
             display: flex; align-items: center; gap: 8px; 
             border-bottom: 2px solid #1c1917;
-            min-height: 64px; /* Use min-height */
-            height: auto;     /* Allow expansion */
+            min-height: 64px;
+            height: auto;
             overflow: visible;
         }
 
@@ -93,7 +93,8 @@
             flex: 1; 
             font-family: 'Cinzel', serif; font-weight: 900; 
             font-size: 24px; line-height: 1.1; 
-            text-transform: uppercase; color: white;
+            text-transform: uppercase; 
+            color: white; /* Белый цвет при вводе */
             text-shadow: 1px 1px 0 #000; 
             display: block; 
             word-wrap: break-word; align-self: center; 
@@ -108,30 +109,46 @@
         .card-icon svg { width: 22px; height: 22px; stroke: white; stroke-width: 2; }
         .card-icon:hover { background: rgba(255,255,255,0.4); }
 
-        /* --- ИЗМЕНЕНИЯ В SUBTITLE --- */
+        /* --- SUBTITLE --- */
         .card-subtitle {
             padding: 5px 10px; 
-            font-family: 'Inter', sans-serif; font-size: 10px; font-weight: 700;
+            font-family: 'Cinzel', serif; /* Заменил Inter на Cinzel */
+            font-size: 10px; font-weight: 700;
             text-transform: uppercase; letter-spacing: 1px; 
             border-bottom: 1px solid #1c1917;
             color: rgba(255,255,255,0.95); 
-            
-            /* Ключевые изменения для переноса */
-            white-space: pre-wrap;       /* Разрешить перенос */
-            word-wrap: break-word;       /* Ломать длинные слова */
-            height: auto;                /* Высота зависит от контента */
-            min-height: 24px;            /* Минимальная высота */
-            line-height: 1.25;           /* Межстрочный интервал */
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            height: auto;
+            min-height: 24px;
+            line-height: 1.25;
             display: block;
         }
 
+        /* --- CONTENT --- */
         .card-content {
             flex: 1; padding: 10px 12px; 
-            font-family: 'Merriweather', serif; font-size: 11px; line-height: 1.35; 
+            font-family: 'Merriweather', serif; /* Оставил для читаемости текста */
+            font-size: 11px; line-height: 1.35; 
             color: #1c1917; background-color: #fff; overflow: hidden;
         }
 
-        [contenteditable="true"]:empty::before { content: attr(data-placeholder); color: rgba(0,0,0,0.3); font-style: italic; pointer-events: none; }
+        /* --- PLACEHOLDERS (Логика цветов) --- */
+        
+        /* Базовый placeholder (для белого фона - описание) */
+        [contenteditable="true"]:empty::before { 
+            content: attr(data-placeholder); 
+            color: rgba(0,0,0,0.3); /* Темно-серый для белого фона */
+            font-style: normal; /* Убрал italic */
+            pointer-events: none; 
+        }
+
+        /* Placeholder для темных фонов (Заголовок и Подзаголовок) */
+        .card-title:empty::before,
+        .card-subtitle:empty::before {
+            color: rgba(255, 255, 255, 0.5) !important; /* Светло-серый (полупрозрачный белый) */
+            text-shadow: none;
+        }
 
         /* --- КНОПКИ НА КАРТЕ --- */
         .card-controls {
@@ -400,7 +417,6 @@
             if (element.classList.contains('card-title')) {
                 maxFontSize = 24; minFontSize = 10; maxLines = 2;
             } else {
-                // УВЕЛИЧИЛ maxLines ДЛЯ SUBTITLE ДО 4, ЧТОБЫ ДАВАТЬ РАСШИРЯТЬСЯ
                 maxFontSize = 12; minFontSize = 8; maxLines = 4; 
             }
 
