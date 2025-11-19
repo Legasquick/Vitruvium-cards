@@ -191,23 +191,38 @@
             .workspace { max-width: none; }
             h1, h2, .floating-menu, .card-adder, .no-print { display: none !important; }
             
+            /* ГЛАВНЫЕ ИЗМЕНЕНИЯ ДЛЯ ПЛОТНОЙ ПЕЧАТИ */
             .cards-list { 
-                display: grid; grid-template-columns: repeat(3, var(--card-width)); 
-                gap: 4mm; justify-content: center; margin: 0; padding: 0;
+                display: grid; 
+                grid-template-columns: repeat(3, var(--card-width)); 
+                gap: 0; /* Убираем отступ между картами */
+                justify-content: center; 
+                margin: 0 auto; 
+                padding: 0;
             }
             
             .card-wrapper { 
-                box-shadow: none !important; margin: 0; padding: 0; 
+                box-shadow: none !important; 
+                margin: 0; 
+                padding: 0; 
                 transform: none !important;
             }
-            .card { box-shadow: none !important; }
+            
+            /* Убеждаемся, что границы не мешают стыковке */
+            .card { 
+                box-shadow: none !important; 
+                margin: 0;
+            }
+            
             .card-controls { display: none !important; }
             
             .card, .card-header, .card-subtitle {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
-            @page { size: A4 portrait; margin: 10mm; }
+            
+            /* Настраиваем поля страницы, чтобы вместилось 3 в ряд без отступов */
+            @page { size: A4 portrait; margin: 5mm; }
         }
     </style>
 </head>
@@ -262,7 +277,7 @@
         <div class="grid grid-cols-4 gap-2 p-3 bg-stone-50" id="modalIconSelector"></div>
     </div>
 
-    <!-- JSON MODAL (FIXED: Centered & Wider) -->
+    <!-- JSON MODAL -->
     <div id="jsonModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-4xl rounded-xl shadow-2xl border border-stone-200 overflow-hidden flex flex-col max-h-[90vh]">
             <div class="p-4 border-b border-stone-200 flex justify-between items-center bg-stone-50">
@@ -499,6 +514,7 @@
         function openJsonModal() {
             document.getElementById('jsonInput').value = '';
             backdrop.style.display = 'block';
+            // Теперь модальное окно flex и по центру
             document.getElementById('jsonModal').style.display = 'flex';
             document.getElementById('jsonInput').focus();
         }
