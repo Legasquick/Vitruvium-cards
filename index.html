@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Мастерская Карт (Smart Scroll)</title>
+    <title>Мастерская Карт (Mobile Scroll)</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -18,7 +18,7 @@
             font-family: 'Cinzel', serif; 
             color: #1c1917;
             -webkit-font-smoothing: antialiased;
-            /* Отступ снизу для скролла */
+            /* Огромный отступ снизу, чтобы был запас для скролла последней карты */
             padding: 20px 10px 80vh 10px; 
             min-height: 100vh;
         }
@@ -45,7 +45,6 @@
             position: relative;
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             z-index: 1;
-            scroll-margin-top: 5px;
         }
 
         @media (hover: hover) {
@@ -212,141 +211,9 @@
         const CARD_TYPES=[{id:'item',name:'Предмет',icon:ICONS.box,color:'#1c1917',subColor:'#44403c'},{id:'weapon',name:'Оружие',icon:ICONS.sword,color:'#7f1d1d',subColor:'#991b1b'},{id:'armor',name:'Броня',icon:ICONS.shield,color:'#0c4a6e',subColor:'#075985'},{id:'effect',name:'Эффект',icon:ICONS.zap,color:'#581c87',subColor:'#6b21a8'},{id:'trait',name:'Черта',icon:ICONS.feather,color:'#064e3b',subColor:'#065f46'},{id:'enemy',name:'Враг',icon:ICONS.skull,color:'#000000',subColor:'#262626'},{id:'ability',name:'Способность',icon:ICONS.star,color:'#713f12',subColor:'#854d0e'},{id:'note',name:'Заметка',icon:ICONS.scroll,color:'#4a4a4a',subColor:'#78716c'},{id:'potion',name:'Зелье',icon:ICONS.potion,color:'#be185d',subColor:'#db2777'},{id:'loot',name:'Лут',icon:ICONS.gem,color:'#0f766e',subColor:'#115e59'}];
         let cards=[]; const cardsContainer=document.getElementById('cardsList'); const countEl=document.getElementById('cardCount'); const backdrop=document.getElementById('modalBackdrop'); const fileInput=document.getElementById('fileInput'); let editingCardIndex=null; let ruler=document.createElement('span'); ruler.style.position='absolute'; ruler.style.visibility='hidden'; ruler.style.whiteSpace='nowrap'; document.body.appendChild(ruler);
 
-        // Флаг переключения фокуса
         let isSwitchingFocus = false;
 
         document.addEventListener('DOMContentLoaded',()=>{
             render();
             backdrop.addEventListener('click',closeAllModals);
-            document.addEventListener('click',(e)=>{if(!e.target.closest('.card-wrapper')) deactivateAllCards();});
-        });
-
-        function render(){
-            cardsContainer.innerHTML=''; countEl.textContent=cards.length;
-            // Кнопка "Новая карта" добавляется ПЕРВОЙ
-            const addBtn=document.createElement('div'); addBtn.className='card-adder'; addBtn.innerHTML='<span>+</span><p>НОВАЯ КАРТА</p>'; addBtn.onclick=addCard; cardsContainer.appendChild(addBtn);
-            
-            cards.forEach((card,index)=>{
-                const typeInfo=CARD_TYPES.find(t=>t.id===card.typeId)||CARD_TYPES[0];
-                const wrapper=document.createElement('div'); wrapper.className='card-wrapper';
-                wrapper.setAttribute('onclick',`activateCard(event, this)`);
-                wrapper.innerHTML=`
-                    <div class="card" data-index="${index}">
-                        <div class="card-header" style="background-color: ${typeInfo.color}; border-color: #1c1917;">
-                            <div class="card-title" contenteditable="true" data-placeholder="НАЗВАНИЕ">${card.title}</div>
-                            <div class="card-icon" onclick="openIconModal(${index}, this); event.stopPropagation();"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${typeInfo.icon}</svg></div>
-                        </div>
-                        <div class="card-subtitle" style="background-color: ${typeInfo.subColor}; border-color: #1c1917;" contenteditable="true" data-placeholder="ТИП / ПОДТИП">${card.subtitle}</div>
-                        <div class="card-content" contenteditable="true" data-placeholder="Описание эффекта или свойства...">${card.content}</div>
-                        <div class="card-controls">
-                            <button class="mini-btn copy" onclick="copyCard(${index}); event.stopPropagation();" title="Копировать"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg></button>
-                            <button class="mini-btn del" onclick="delCard(${index}); event.stopPropagation();" title="Удалить"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-                        </div>
-                    </div>`;
-                cardsContainer.appendChild(wrapper);
-                setTimeout(()=>{adjustFontSize(wrapper.querySelector('.card-title')); adjustFontSize(wrapper.querySelector('.card-subtitle'));},0);
-            });
-            attachListeners();
-        }
-
-        function activateCard(e,wrapperEl){
-            document.querySelectorAll('.card-wrapper').forEach(el=>{if(el!==wrapperEl)el.classList.remove('active')});
-            wrapperEl.classList.add('active');
-        }
-        function deactivateAllCards(){document.querySelectorAll('.card-wrapper').forEach(el=>el.classList.remove('active'));}
-
-        function attachListeners(){
-            document.querySelectorAll('.card[data-index]').forEach(cardEl=>{
-                cardEl.querySelectorAll('[contenteditable="true"]').forEach(field=>{
-                    field.addEventListener('input',()=>adjustFontSize(field));
-                    
-                    // FOCUS
-                    field.addEventListener('focus',(e)=>{
-                        isSwitchingFocus = true; // Ставим флаг, что мы в фокусе
-                        const wrapper=cardEl.closest('.card-wrapper');
-                        if(wrapper){document.querySelectorAll('.card-wrapper').forEach(el=>el.classList.remove('active')); wrapper.classList.add('active');}
-                        setTimeout(()=>{
-                            if(wrapper) {
-                                const rect = wrapper.getBoundingClientRect();
-                                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                                window.scrollTo({top: rect.top + scrollTop - 5, behavior: 'smooth'});
-                            }
-                        },300);
-                    });
-
-                    // BLUR (Потеря фокуса)
-                    field.addEventListener('blur', () => {
-                        updateCardData(field);
-                        isSwitchingFocus = false; // Снимаем флаг
-                        
-                        setTimeout(() => {
-                            // Если за 200мс фокус не перешел на другое поле (флаг остался false)
-                            if (!isSwitchingFocus) {
-                                deactivateAllCards(); // Убираем выделение
-                                
-                                // Скроллим к Add Button
-                                const addBtn = document.querySelector('.card-adder');
-                                if(addBtn) {
-                                    const rect = addBtn.getBoundingClientRect();
-                                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                                    window.scrollTo({
-                                        top: rect.top + scrollTop - 5, 
-                                        behavior: 'smooth'
-                                    });
-                                }
-                            }
-                        }, 200);
-                    });
-                });
-            });
-        }
-
-        function updateCardData(element){
-            const cardEl=element.closest('.card'); if(!cardEl)return;
-            const index=parseInt(cardEl.dataset.index,10); if(isNaN(index)||!cards[index])return;
-            cards[index].title=cardEl.querySelector('.card-title').innerText.trim();
-            cards[index].subtitle=cardEl.querySelector('.card-subtitle').innerText.trim();
-            cards[index].content=cardEl.querySelector('.card-content').innerHTML;
-        }
-
-        function adjustFontSize(element){
-            if(!element||!(element.classList.contains('card-title')||element.classList.contains('card-subtitle')))return;
-            let maxFontSize=element.classList.contains('card-title')?24:12;
-            let minFontSize=element.classList.contains('card-title')?10:8;
-            let maxLines=element.classList.contains('card-title')?2:4;
-            const checkForOverflow=(el)=>{
-                const computedStyle=window.getComputedStyle(el); const maxWidth=el.clientWidth;
-                ruler.style.font=computedStyle.font; ruler.style.letterSpacing=computedStyle.letterSpacing; ruler.style.textTransform=computedStyle.textTransform;
-                const words=el.textContent.split(/\s+/);
-                for(const word of words){ruler.textContent=word; if(ruler.offsetWidth>maxWidth)return true;}
-                return el.scrollHeight>(parseFloat(computedStyle.lineHeight)*maxLines)+2;
-            };
-            let currentSize=maxFontSize; element.style.fontSize=currentSize+'px';
-            while(currentSize>minFontSize&&checkForOverflow(element)){currentSize--; element.style.fontSize=currentSize+'px';}
-        }
-
-        function addCard(){cards.unshift({typeId:'item',title:'',subtitle:'',content:''}); render(); const newTitle=document.querySelector('.card[data-index="0"] .card-title'); if(newTitle)newTitle.focus();}
-        function delCard(index){cards.splice(index,1); render();}
-        function copyCard(index){const clone=JSON.parse(JSON.stringify(cards[index])); cards.splice(index+1,0,clone); render();}
-        function clearAll(){if(confirm("Удалить все карточки?")){cards=[]; render();}}
-        function openIconModal(index,btnEl){
-            editingCardIndex=index; const rect=btnEl.getBoundingClientRect(); const modal=document.getElementById('iconModal'); const grid=document.getElementById('modalIconSelector'); grid.innerHTML='';
-            CARD_TYPES.forEach(type=>{
-                const div=document.createElement('div'); div.className='w-12 h-12 border border-stone-200 flex justify-center items-center cursor-pointer hover:bg-stone-800 hover:text-white transition-colors rounded'; div.title=type.name; div.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${type.icon}</svg>`;
-                div.onclick=()=>setCardType(type.id); grid.appendChild(div);
-            });
-            backdrop.style.display='block'; modal.style.display='block';
-            if(window.innerWidth>768){let top=rect.bottom+window.scrollY+10; let left=rect.left+window.scrollX-250; if(left<10)left=10; modal.style.top=top+'px'; modal.style.left=left+'px';}else{modal.style.top=''; modal.style.left='';}
-        }
-        function setCardType(typeId){if(editingCardIndex!==null&&cards[editingCardIndex]){cards[editingCardIndex].typeId=typeId; render();} closeAllModals();}
-        function openJsonModal(){document.getElementById('jsonInput').value=''; backdrop.style.display='block'; document.getElementById('jsonModal').style.display='flex'; document.getElementById('jsonInput').focus();}
-        function applyJsonText(){const val=document.getElementById('jsonInput').value.trim(); if(!val)return; try{const data=JSON.parse(val); processLoadedData(data); closeAllModals();}catch(e){alert("Ошибка: Некорректный JSON");}}
-        function closeAllModals(){document.getElementById('iconModal').style.display='none'; document.getElementById('jsonModal').style.display='none'; backdrop.style.display='none'; editingCardIndex=null;}
-        function saveJSON(){if(!cards.length)return alert("Пусто!"); const blob=new Blob([JSON.stringify(cards,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='cards_vitruviy.json'; a.click();}
-        function loadJSONFile(){document.getElementById('fileInput').click();}
-        fileInput.addEventListener('change',e=>{const file=e.target.files[0]; if(!file)return; const reader=new FileReader(); reader.onload=ev=>{try{const data=JSON.parse(ev.target.result); processLoadedData(data);}catch(err){alert("Ошибка файла");}}; reader.readAsText(file); e.target.value='';});
-        function processLoadedData(data){if(Array.isArray(data)){cards=data.map(c=>({typeId:c.typeId||'item',title:c.title||'',subtitle:c.subtitle||'',content:c.content||c.description||''})); render();}else{alert("Неверный формат данных (должен быть массив)");}}
-        function printCards(){if(!cards.length)return alert("Нет карт для печати"); window.print();}
-    </script>
-</body>
-</html>
+            document.addEventListener('click',(e)=>{if(!e.target.closest('.card-w
