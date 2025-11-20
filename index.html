@@ -3,28 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Мастерская Карт (Menu Hide Fix)</title>
+    <title>Мастерская Карт (Final UI + Scroll)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
 
     <style>
         /* --- БАЗА --- */
-        :root { --safe-bottom: env(safe-area-inset-bottom, 0px); }
+        :root {
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
 
         body { 
             background-color: #e7e5e4; 
             font-family: 'Cinzel', serif; 
             color: #1c1917;
             -webkit-font-smoothing: antialiased;
-            padding: 20px 10px calc(90px + var(--safe-bottom)) 10px;
+            /* ВАЖНО: 80vh отступа снизу позволяют скроллить контент высоко вверх,
+               игнорируя наличие меню в обычном состоянии */
+            padding: 20px 10px 80vh 10px;
             min-height: 100vh;
             cursor: default;
-            user-select: none;
-            -webkit-user-select: none;
+            user-select: none; -webkit-user-select: none; /* Блокируем выделение фона */
         }
 
-        @media (min-width: 1025px) { body { padding-bottom: 100px; } }
+        /* На ПК возвращаем нормальный отступ */
+        @media (min-width: 1025px) { 
+            body { padding-bottom: 100px; } 
+        }
 
         .font-header { font-family: 'Cinzel', serif; }
         .font-body { font-family: 'Merriweather', serif; }
@@ -44,7 +50,7 @@
             position: relative; 
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
             z-index: 1; 
-            scroll-margin-top: 5px; 
+            scroll-margin-top: 5px; /* Помогает при автоматическом скролле */
         }
 
         @media (min-width: 1025px) {
@@ -60,7 +66,7 @@
             overflow: hidden; position: relative; 
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0; 
             transition: border-color 0.2s, box-shadow 0.2s;
-            user-select: text; -webkit-user-select: text; cursor: text; 
+            user-select: text; -webkit-user-select: text; cursor: text; /* Разрешаем текст внутри */
         }
         .card-wrapper.active .card {
             border-color: #3b82f6; 
@@ -77,7 +83,7 @@
         [contenteditable="true"]:empty::before { content: attr(data-placeholder); color: rgba(0,0,0,0.3); pointer-events: none; }
         .card-title:empty::before, .card-subtitle:empty::before { color: rgba(255, 255, 255, 0.5) !important; text-shadow: none; }
 
-        /* --- КНОПКИ УПРАВЛЕНИЯ --- */
+        /* --- КНОПКИ НА КАРТЕ --- */
         .card-controls {
             position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
             display: flex; align-items: center; gap: 12px; z-index: 30;
@@ -85,20 +91,16 @@
             transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
             user-select: none;
         }
-
-        @media (min-width: 1025px) {
-            .card-wrapper:hover .card-controls { opacity: 1; visibility: visible; pointer-events: auto; }
-        }
+        @media (min-width: 1025px) { .card-wrapper:hover .card-controls { opacity: 1; visibility: visible; pointer-events: auto; } }
         @media (max-width: 1024px) {
             .card-wrapper:hover .card-controls { opacity: 0; visibility: hidden; pointer-events: none; }
             .card-wrapper.active .card-controls { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; transform: translateX(-50%) translateY(-5px); }
         }
-
         .mini-btn { width: 42px; height: 42px; border-radius: 50%; display: flex; justify-content: center; align-items: center; background: #1c1917; color: white; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.4); cursor: pointer; }
         .mini-btn.del { background: #dc2626; }
         .mini-btn.copy { background: #059669; }
 
-        /* --- ДИЗАЙН МЕНЮ --- */
+        /* --- НОВОЕ МЕНЮ --- */
         .floating-menu {
             position: fixed; z-index: 9999; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             left: 1rem; right: 1rem; bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
@@ -109,11 +111,9 @@
             opacity: 1; transform: translateY(0);
         }
 
-        /* КЛАСС ДЛЯ СКРЫТИЯ МЕНЮ ПРИ ВВОДЕ ТЕКСТА */
+        /* Скрытие меню при открытой клавиатуре */
         body.keyboard-open .floating-menu {
-            opacity: 0;
-            pointer-events: none;
-            transform: translateY(150%); /* Уезжает вниз */
+            opacity: 0; pointer-events: none; transform: translateY(150%);
         }
 
         .menu-btn {
@@ -137,7 +137,7 @@
             .menu-btn { flex: none; border-radius: 0.5rem; }
             .menu-btn:hover .menu-tooltip { display: block; opacity: 1; }
             .menu-divider { width: 100%; height: 1px; margin: 0.25rem 0; }
-            /* На ПК меню не скрываем при вводе */
+            /* На ПК не скрываем */
             body.keyboard-open .floating-menu { opacity: 1; pointer-events: auto; transform: none; }
         }
 
@@ -168,7 +168,7 @@
         <div id="cardsList" class="cards-list"></div>
     </div>
 
-    <!-- МЕНЮ (Скрывается при вводе текста) -->
+    <!-- МЕНЮ -->
     <div class="floating-menu">
         <button onclick="printCards()" class="menu-btn btn-print"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg><span class="menu-tooltip">Печать</span></button>
         <button onclick="saveJSON()" class="menu-btn btn-save"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg><span class="menu-tooltip">Скачать</span></button>
@@ -264,10 +264,11 @@
                         const wrapper=cardEl.closest('.card-wrapper');
                         if(wrapper){document.querySelectorAll('.card-wrapper').forEach(el=>el.classList.remove('active')); wrapper.classList.add('active');}
                         
-                        // --- СКРЫВАЕМ МЕНЮ (ДОБАВЛЯЕМ КЛАСС) СРАЗУ ---
+                        // 1. СКРЫВАЕМ МЕНЮ СРАЗУ
                         document.body.classList.add('keyboard-open');
 
                         if(window.innerWidth <= 1024) {
+                            // 2. ЖДЕМ И СКРОЛЛИМ
                             setTimeout(()=>{
                                 if(wrapper) {
                                     const rect = wrapper.getBoundingClientRect();
@@ -282,10 +283,9 @@
                         isSwitchingFocus = false; 
                         setTimeout(() => {
                             if (!isSwitchingFocus) {
-                                // --- ПОКАЗЫВАЕМ МЕНЮ (УДАЛЯЕМ КЛАСС) ---
+                                // ВОЗВРАЩАЕМ МЕНЮ
                                 document.body.classList.remove('keyboard-open');
                                 deactivateAllCards(); 
-                                
                                 if(window.innerWidth <= 1024) {
                                     const addBtn = document.querySelector('.card-adder');
                                     if(addBtn) {
