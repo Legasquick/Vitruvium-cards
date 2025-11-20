@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Мастерская Карт (Mobile Design)</title>
+    <title>Мастерская Карт (Smooth Fix)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
@@ -11,7 +11,6 @@
     <style>
         /* --- БАЗА --- */
         :root {
-            /* Переменная для учета нижней полоски на iPhone */
             --safe-bottom: env(safe-area-inset-bottom, 20px);
             --card-width: 63mm;
             --card-height: 88mm;
@@ -22,25 +21,19 @@
             font-family: 'Cinzel', serif; 
             color: #1c1917;
             -webkit-font-smoothing: antialiased;
-            
-            /* Отступ снизу = высота меню + safe area + воздух */
             padding: 20px 10px calc(90px + var(--safe-bottom)) 10px;
-            
             min-height: 100vh;
             cursor: default;
             user-select: none;
             -webkit-user-select: none;
         }
 
-        /* На ПК отступ меньше */
         @media (min-width: 1025px) { body { padding-bottom: 100px; } }
-
         .font-header { font-family: 'Cinzel', serif; }
         .font-body { font-family: 'Merriweather', serif; }
 
         /* --- СЕТКА --- */
         .workspace { max-width: 1400px; margin: 0 auto; min-height: 100%; }
-        
         .cards-list { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, var(--card-width)); 
@@ -52,7 +45,7 @@
             position: relative; 
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
             z-index: 1; 
-            scroll-margin-top: 15px;
+            /* scroll-margin-top убрал из CSS, так как считаем вручную в JS */
         }
 
         @media (min-width: 1025px) {
@@ -75,7 +68,6 @@
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2), 0 10px 15px -3px rgba(0,0,0,0.1);
         }
 
-        /* --- КОНТЕНТ --- */
         .card-header { padding: 8px 8px; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid #1c1917; min-height: 64px; height: auto; }
         .card-title { flex: 1; font-family: 'Cinzel', serif; font-weight: 900; font-size: 24px; line-height: 1.1; text-transform: uppercase; color: white; text-shadow: 1px 1px 0 #000; word-wrap: break-word; align-self: center; }
         .card-icon { flex-shrink: 0; width: 34px; height: 34px; display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.4); cursor: pointer; user-select: none; }
@@ -85,7 +77,7 @@
         [contenteditable="true"]:empty::before { content: attr(data-placeholder); color: rgba(0,0,0,0.3); pointer-events: none; }
         .card-title:empty::before, .card-subtitle:empty::before { color: rgba(255, 255, 255, 0.5) !important; text-shadow: none; }
 
-        /* --- КНОПКИ УПРАВЛЕНИЯ КАРТОЙ --- */
+        /* --- КНОПКИ --- */
         .card-controls {
             position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
             display: flex; align-items: center; gap: 12px; z-index: 30;
@@ -101,67 +93,21 @@
         .mini-btn.del { background: #dc2626; }
         .mini-btn.copy { background: #059669; }
 
-        /* --- ДИЗАЙН ПЛАВАЮЩЕГО МЕНЮ (НОВЫЙ) --- */
+        /* --- МЕНЮ --- */
         @media (max-width: 1024px) {
-            .floating-menu {
-                /* Позиционирование "Острова" */
-                position: fixed !important;
-                top: auto !important;
-                bottom: calc(10px + var(--safe-bottom)) !important; /* Отступ от низа + Safe Area */
-                left: 14px !important;
-                right: 14px !important;
-                width: auto !important; /* Авто ширина, ограничена left/right */
-                
-                /* Flexbox для кнопок */
-                display: flex !important;
-                flex-direction: row !important;
-                justify-content: space-between; /* Равномерное распределение */
-                align-items: center;
-                gap: 8px;
-
-                /* Визуальный стиль */
-                padding: 8px 12px !important;
-                background: rgba(255, 255, 255, 0.9) !important; /* Полупрозрачный белый */
-                backdrop-filter: blur(12px); /* Размытие фона под меню */
-                border: 1px solid #d6d3d1; /* Тонкая рамка */
-                border-radius: 16px !important; /* Сильное скругление */
-                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); /* Тень */
-                
-                z-index: 100;
+            .floating-menu { 
+                position: fixed !important; top: auto !important; bottom: calc(10px + var(--safe-bottom)) !important; left: 14px !important; right: 14px !important; width: auto !important; 
+                display: flex !important; flex-direction: row !important; justify-content: space-between; align-items: center; gap: 8px;
+                padding: 8px 12px !important; background: rgba(255, 255, 255, 0.9) !important; backdrop-filter: blur(12px); border: 1px solid #d6d3d1; border-radius: 16px !important; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); z-index: 100;
             }
-
-            /* Кнопки внутри меню */
-            .floating-menu button {
-                flex: 1; /* Кнопки занимают доступное место */
-                padding: 10px 0 !important;
-                border-radius: 10px !important; /* Слегка скругленные кнопки */
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                margin: 0 !important;
-            }
-            
-            /* Разделитель */
-            .h-px { 
-                width: 1px !important; 
-                height: 24px !important; 
-                margin: 0 2px !important; 
-                background-color: #d6d3d1;
-            }
-            
-            /* Скрываем тултипы на мобилках */
+            .floating-menu button { flex: 1; padding: 10px 0 !important; border-radius: 10px !important; display: flex; justify-content: center; align-items: center; margin: 0 !important; }
+            .h-px { width: 1px !important; height: 24px !important; margin: 0 2px !important; background-color: #d6d3d1; }
             .group span { display: none !important; }
-            
-            /* Модальные окна */
             #iconModal { position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) !important; width: 90% !important; max-width: 320px; }
         }
         
         .card-adder { 
-            width: var(--card-width); height: var(--card-height); 
-            border: 2px dashed #a8a29e; background: rgba(255,255,255,0.5); 
-            border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; 
-            cursor: pointer; color: #78716c; user-select: none; 
-            scroll-margin-top: 15px;
+            width: var(--card-width); height: var(--card-height); border: 2px dashed #a8a29e; background: rgba(255,255,255,0.5); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; color: #78716c; user-select: none; 
         }
 
         /* --- PRINT --- */
@@ -189,30 +135,13 @@
         <div id="cardsList" class="cards-list"></div>
     </div>
 
-    <!-- ОБНОВЛЕННОЕ ПЛАВАЮЩЕЕ МЕНЮ -->
     <div class="floating-menu fixed top-4 right-4 flex flex-col gap-3 bg-white p-3 rounded-xl shadow-2xl z-50 border border-stone-200 transition-opacity">
-        <button onclick="printCards()" title="Печать PDF" class="bg-stone-800 text-white hover:bg-stone-700 shadow-md group relative p-3 rounded-lg transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-            <span class="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-stone-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none font-bold font-header">Печать</span>
-        </button>
-        
-        <button onclick="saveJSON()" title="Скачать" class="bg-emerald-600 text-white hover:bg-emerald-500 shadow-md group relative p-3 rounded-lg transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-        </button>
-        
-        <button onclick="loadJSONFile()" title="Файл" class="bg-blue-600 text-white hover:bg-blue-500 shadow-md group relative p-3 rounded-lg transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-        </button>
-        
-        <button onclick="openJsonModal()" title="Текст" class="bg-amber-600 text-white hover:bg-amber-500 shadow-md group relative p-3 rounded-lg transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-        </button>
-        
+        <button onclick="printCards()" title="Печать PDF" class="bg-stone-800 text-white hover:bg-stone-700 shadow-md group relative p-3 rounded-lg transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg><span class="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-stone-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none font-bold font-header">Печать</span></button>
+        <button onclick="saveJSON()" title="Скачать" class="bg-emerald-600 text-white hover:bg-emerald-500 shadow-md group relative p-3 rounded-lg transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg></button>
+        <button onclick="loadJSONFile()" title="Файл" class="bg-blue-600 text-white hover:bg-blue-500 shadow-md group relative p-3 rounded-lg transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg></button>
+        <button onclick="openJsonModal()" title="Текст" class="bg-amber-600 text-white hover:bg-amber-500 shadow-md group relative p-3 rounded-lg transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></button>
         <div class="h-px bg-stone-200 my-1"></div>
-        
-        <button onclick="clearAll()" title="Сброс" class="bg-white text-stone-400 border border-stone-200 hover:bg-red-50 hover:text-red-500 hover:border-red-200 shadow-sm group relative p-3 rounded-lg transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-        </button>
+        <button onclick="clearAll()" title="Сброс" class="bg-white text-stone-400 border border-stone-200 hover:bg-red-50 hover:text-red-500 hover:border-red-200 shadow-sm group relative p-3 rounded-lg transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
     </div>
 
     <div id="modalBackdrop" class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-40"></div>
@@ -238,24 +167,22 @@
     <input type="file" id="fileInput" accept=".json" style="display: none;">
 
     <script>
+        // ОТСТУП ОТ ВЕРХА ПРИ СКРОЛЛЕ
+        const SCROLL_OFFSET = 10;
+
         const ICONS={box:'<path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line>',sword:'<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"></polyline><line x1="13" y1="19" x2="19" y2="13"></line><line x1="16" y1="16" x2="20" y2="20"></line><line x1="19" y1="21" x2="21" y2="19"></line>',shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>',zap:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>',skull:'<path d="M12.02 2.84C7.66 2.69 4 6.27 4 10.68 4 12.9 5.11 14.86 6.84 16.13L6 22h12l-.84-5.87C18.89 14.86 20 12.9 20 10.68c0-4.41-3.66-7.99-7.98-7.84z"></path><circle cx="9" cy="11" r="1.5"></circle><circle cx="15" cy="11" r="1.5"></circle>',heart:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>',star:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>',feather:'<path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line>',eye:'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>',scroll:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14 2z"></path><polyline points="14 2 14 8 20 8"></polyline>',potion:'<path d="M10 2h4"></path><path d="M12 2v4"></path><path d="M16 11H8l-2 9h12l-2-9Z"></path><path d="M12 6c-2.21 0-4 2-4 5"></path><path d="M16 11c0-3-1.79-5-4-5"></path>',gem:'<path d="M6 3h12l4 6-10 13L2 9Z"></path><path d="M11 3 8 9l4 13 4-13-3-6"></path><path d="M2 9h20"></path>'};
         const CARD_TYPES=[{id:'item',name:'Предмет',icon:ICONS.box,color:'#1c1917',subColor:'#44403c'},{id:'weapon',name:'Оружие',icon:ICONS.sword,color:'#7f1d1d',subColor:'#991b1b'},{id:'armor',name:'Броня',icon:ICONS.shield,color:'#0c4a6e',subColor:'#075985'},{id:'effect',name:'Эффект',icon:ICONS.zap,color:'#581c87',subColor:'#6b21a8'},{id:'trait',name:'Черта',icon:ICONS.feather,color:'#064e3b',subColor:'#065f46'},{id:'enemy',name:'Враг',icon:ICONS.skull,color:'#000000',subColor:'#262626'},{id:'ability',name:'Способность',icon:ICONS.star,color:'#713f12',subColor:'#854d0e'},{id:'note',name:'Заметка',icon:ICONS.scroll,color:'#4a4a4a',subColor:'#78716c'},{id:'potion',name:'Зелье',icon:ICONS.potion,color:'#be185d',subColor:'#db2777'},{id:'loot',name:'Лут',icon:ICONS.gem,color:'#0f766e',subColor:'#115e59'}];
         let cards=[]; const cardsContainer=document.getElementById('cardsList'); const countEl=document.getElementById('cardCount'); const backdrop=document.getElementById('modalBackdrop'); const fileInput=document.getElementById('fileInput'); let editingCardIndex=null; let ruler=document.createElement('span'); ruler.style.position='absolute'; ruler.style.visibility='hidden'; ruler.style.whiteSpace='nowrap'; document.body.appendChild(ruler);
+        
         let isSwitchingFocus = false;
 
         document.addEventListener('DOMContentLoaded',()=>{
             render();
             backdrop.addEventListener('click',closeAllModals);
             document.addEventListener('mousedown', (e) => {
-                if (!e.target.closest('.card-wrapper') && 
-                    !e.target.closest('.floating-menu') && 
-                    !e.target.closest('.card-adder') &&
-                    !e.target.closest('#iconModal') &&
-                    !e.target.closest('#jsonModal')) {
+                if (!e.target.closest('.card-wrapper') && !e.target.closest('.floating-menu') && !e.target.closest('.card-adder') && !e.target.closest('#iconModal') && !e.target.closest('#jsonModal')) {
                     deactivateAllCards();
-                    if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.isContentEditable)) {
-                        document.activeElement.blur();
-                    }
+                    if (document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.isContentEditable)) { document.activeElement.blur(); }
                     window.getSelection().removeAllRanges();
                 }
             });
@@ -295,8 +222,19 @@
         function deactivateAllCards(){
             document.querySelectorAll('.card-wrapper').forEach(el=>el.classList.remove('active'));
             if(document.activeElement instanceof HTMLElement) document.activeElement.blur();
-            const sel = window.getSelection();
-            if (sel) sel.removeAllRanges();
+            const sel = window.getSelection(); if (sel) sel.removeAllRanges();
+        }
+
+        // ФУНКЦИЯ ПЛАВНОГО СКРОЛЛА (ВМЕСТО scrollIntoView)
+        function smoothScrollTo(element, offset) {
+            const rect = element.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const targetY = rect.top + scrollTop - offset;
+            
+            window.scrollTo({
+                top: targetY,
+                behavior: 'smooth'
+            });
         }
 
         function attachListeners(){
@@ -308,8 +246,13 @@
                     field.addEventListener('focus',(e)=>{
                         isSwitchingFocus = true; 
                         const wrapper=cardEl.closest('.card-wrapper');
-                        if(wrapper){document.querySelectorAll('.card-wrapper').forEach(el=>el.classList.remove('active')); wrapper.classList.add('active');}
-                        setTimeout(()=>{if(wrapper) wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });},300);
+                        if(wrapper){
+                            document.querySelectorAll('.card-wrapper').forEach(el=>el.classList.remove('active')); 
+                            wrapper.classList.add('active');
+                        }
+                        setTimeout(()=>{
+                            if(wrapper) smoothScrollTo(wrapper, SCROLL_OFFSET);
+                        },300);
                     });
 
                     field.addEventListener('blur', () => {
@@ -319,7 +262,7 @@
                             if (!isSwitchingFocus) {
                                 deactivateAllCards(); 
                                 const addBtn = document.querySelector('.card-adder');
-                                if(addBtn) addBtn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                if(addBtn) smoothScrollTo(addBtn, SCROLL_OFFSET);
                             }
                         }, 200);
                     });
