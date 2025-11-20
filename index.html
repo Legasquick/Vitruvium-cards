@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Мастерская Карт (Smooth Fix)</title>
+    <title>Мастерская Карт (Auto-Hide Menu)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
@@ -15,8 +15,7 @@
             font-family: 'Cinzel', serif; 
             color: #1c1917;
             -webkit-font-smoothing: antialiased;
-            /* Большой отступ снизу, чтобы можно было поднять последнюю карту наверх */
-            padding: 20px 10px 85vh 10px; 
+            padding: 20px 10px 80vh 10px; 
             min-height: 100vh;
             cursor: default;
             user-select: none;
@@ -42,8 +41,6 @@
             position: relative; 
             transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
             z-index: 1; 
-            
-            /* ВАЖНО: Этот отступ используется при scrollIntoView */
             scroll-margin-top: 15px; 
         }
 
@@ -86,6 +83,7 @@
             transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
             user-select: none;
         }
+
         @media (min-width: 1025px) {
             .card-wrapper:hover .card-controls { opacity: 1; visibility: visible; pointer-events: auto; }
         }
@@ -93,13 +91,14 @@
             .card-wrapper:hover .card-controls { opacity: 0; visibility: hidden; pointer-events: none; }
             .card-wrapper.active .card-controls { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; transform: translateX(-50%) translateY(-5px); }
         }
+
         .mini-btn { width: 42px; height: 42px; border-radius: 50%; display: flex; justify-content: center; align-items: center; background: #1c1917; color: white; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.4); cursor: pointer; }
         .mini-btn.del { background: #dc2626; }
         .mini-btn.copy { background: #059669; }
 
         /* --- МЕНЮ --- */
         .floating-menu {
-            position: fixed; z-index: 9999; transition: opacity 0.3s;
+            position: fixed; z-index: 9999; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             left: 1rem; right: 1rem; bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
             background-color: rgba(255, 255, 255, 0.95); border: 1px solid #d6d3d1; border-radius: 1rem;
             padding: 0.5rem; display: flex; gap: 0.5rem; justify-content: space-around;
@@ -122,8 +121,18 @@
             }
             .menu-btn:hover .tooltip { opacity: 1; }
         }
-        @media (max-width: 1023px) { .menu-btn .tooltip { display: none; } }
-
+        
+        @media (max-width: 1024px) {
+            .menu-btn .tooltip { display: none; }
+            
+            /* КЛАСС ДЛЯ СКРЫТИЯ МЕНЮ НА МОБИЛЬНЫХ */
+            .floating-menu.menu-hidden {
+                opacity: 0;
+                pointer-events: none;
+                transform: translateY(100%); /* Уезжает вниз */
+            }
+        }
+        
         .card-adder { width: var(--card-width); height: var(--card-height); border: 2px dashed #a8a29e; background: rgba(255,255,255,0.5); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; color: #78716c; user-select: none; }
 
         /* --- PRINT --- */
@@ -251,12 +260,16 @@
         function activateCard(e,wrapperEl){
             document.querySelectorAll('.card-wrapper').forEach(el=>{if(el!==wrapperEl)el.classList.remove('active')});
             wrapperEl.classList.add('active');
+            // СКРЫВАЕМ МЕНЮ НА МОБИЛЬНЫХ
+            document.querySelector('.floating-menu').classList.add('menu-hidden');
         }
 
         function deactivateAllCards(){
             document.querySelectorAll('.card-wrapper').forEach(el=>el.classList.remove('active'));
             if(document.activeElement instanceof HTMLElement) document.activeElement.blur();
             const sel = window.getSelection(); if (sel) sel.removeAllRanges();
+            // ВОЗВРАЩАЕМ МЕНЮ
+            document.querySelector('.floating-menu').classList.remove('menu-hidden');
         }
 
         function attachListeners(){
@@ -264,18 +277,14 @@
                 cardEl.querySelectorAll('[contenteditable="true"]').forEach(field=>{
                     field.addEventListener('input',()=>adjustFontSize(field));
                     field.addEventListener('blur',()=>updateCardData(field));
-                    
                     field.addEventListener('focus',(e)=>{
                         isSwitchingFocus = true; 
                         const wrapper=cardEl.closest('.card-wrapper');
-                        if(wrapper){document.querySelectorAll('.card-wrapper').forEach(el=>el.classList.remove('active')); wrapper.classList.add('active');}
+                        if(wrapper){document.querySelectorAll('.card-wrapper').forEach(el=>el.classList.remove('active')); wrapper.classList.add('active'); document.querySelector('.floating-menu').classList.add('menu-hidden');}
                         
-                        // FIX: ИСПОЛЬЗУЕМ scrollIntoView ВМЕСТО РУЧНОГО SCROLLTO
                         if(window.innerWidth <= 1024) {
                             setTimeout(()=>{
                                 if(wrapper) {
-                                    // block: 'start' прижмет верх элемента к верху вьюпорта
-                                    // CSS scroll-margin-top: 15px обеспечит отступ
                                     wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                 }
                             },300);
@@ -291,7 +300,6 @@
                                 if(window.innerWidth <= 1024) {
                                     const addBtn = document.querySelector('.card-adder');
                                     if(addBtn) {
-                                        // Плавный откат к кнопке добавления
                                         addBtn.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                     }
                                 }
