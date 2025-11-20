@@ -2,25 +2,21 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <!-- Добавлено viewport-fit=cover для корректной работы safe-area на iPhone -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Мастерская Карт (New UI)</title>
+    <title>Мастерская Карт (Menu Hide Fix)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
 
     <style>
         /* --- БАЗА --- */
-        :root {
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-        }
+        :root { --safe-bottom: env(safe-area-inset-bottom, 0px); }
 
         body { 
             background-color: #e7e5e4; 
             font-family: 'Cinzel', serif; 
             color: #1c1917;
             -webkit-font-smoothing: antialiased;
-            /* Отступ снизу: высота меню (ок. 70px) + safe area + отступ 20px */
             padding: 20px 10px calc(90px + var(--safe-bottom)) 10px;
             min-height: 100vh;
             cursor: default;
@@ -28,10 +24,7 @@
             -webkit-user-select: none;
         }
 
-        /* На ПК убираем отступ снизу под меню */
-        @media (min-width: 1025px) { 
-            body { padding-bottom: 100px; } 
-        }
+        @media (min-width: 1025px) { body { padding-bottom: 100px; } }
 
         .font-header { font-family: 'Cinzel', serif; }
         .font-body { font-family: 'Merriweather', serif; }
@@ -84,7 +77,7 @@
         [contenteditable="true"]:empty::before { content: attr(data-placeholder); color: rgba(0,0,0,0.3); pointer-events: none; }
         .card-title:empty::before, .card-subtitle:empty::before { color: rgba(255, 255, 255, 0.5) !important; text-shadow: none; }
 
-        /* --- КНОПКИ НА КАРТЕ --- */
+        /* --- КНОПКИ УПРАВЛЕНИЯ --- */
         .card-controls {
             position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
             display: flex; align-items: center; gap: 12px; z-index: 30;
@@ -92,127 +85,60 @@
             transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
             user-select: none;
         }
-        @media (min-width: 1025px) { .card-wrapper:hover .card-controls { opacity: 1; visibility: visible; pointer-events: auto; } }
+
+        @media (min-width: 1025px) {
+            .card-wrapper:hover .card-controls { opacity: 1; visibility: visible; pointer-events: auto; }
+        }
         @media (max-width: 1024px) {
             .card-wrapper:hover .card-controls { opacity: 0; visibility: hidden; pointer-events: none; }
             .card-wrapper.active .card-controls { opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; transform: translateX(-50%) translateY(-5px); }
         }
+
         .mini-btn { width: 42px; height: 42px; border-radius: 50%; display: flex; justify-content: center; align-items: center; background: #1c1917; color: white; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.4); cursor: pointer; }
         .mini-btn.del { background: #dc2626; }
         .mini-btn.copy { background: #059669; }
 
-        /* --- НОВЫЙ ДИЗАЙН МЕНЮ (CSS) --- */
+        /* --- ДИЗАЙН МЕНЮ --- */
         .floating-menu {
-            position: fixed;
-            z-index: 9999;
-            transition: opacity 0.3s;
-            
-            /* Мобильный стиль (по умолчанию) - "Остров" внизу */
-            left: 1rem; 
-            right: 1rem;
-            bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
-            
-            display: flex;
-            flex-direction: row;
-            justify-content: space-around;
-            gap: 0.5rem;
-            
-            padding: 0.5rem;
-            background-color: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid #d6d3d1;
-            border-radius: 1rem; /* rounded-2xl */
+            position: fixed; z-index: 9999; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            left: 1rem; right: 1rem; bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+            display: flex; flexDirection: row; justify-content: space-around; gap: 0.5rem;
+            padding: 0.5rem; background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px); border: 1px solid #d6d3d1; border-radius: 1rem;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            opacity: 1; transform: translateY(0);
         }
 
-        /* Стиль кнопок в меню */
-        .menu-btn {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0.75rem;
-            border-radius: 0.75rem; /* rounded-xl */
-            transition: all 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            position: relative; /* Для тултипа */
-            color: white;
-        }
-        
-        .menu-btn:active { transform: scale(0.95); }
-        
-        /* Цвета кнопок */
-        .btn-print { background-color: #1c1917; } /* stone-800 */
-        .btn-save { background-color: #059669; } /* emerald-600 */
-        .btn-load { background-color: #2563eb; } /* blue-600 */
-        .btn-text { background-color: #d97706; } /* amber-600 */
-        .btn-reset { 
-            background-color: white; 
-            border: 1px solid #e7e5e4; 
-            color: #a8a29e !important; 
-        }
-        .btn-reset:hover { color: #dc2626 !important; background-color: #fef2f2; }
-
-        /* Тултипы (Скрыты на мобильных) */
-        .menu-tooltip {
-            display: none;
-            position: absolute;
-            right: 100%;
-            top: 50%;
-            transform: translateY(-50%);
-            margin-right: 0.75rem;
-            padding: 0.25rem 0.5rem;
-            background-color: #1c1917;
-            color: white;
-            font-size: 0.75rem;
-            font-weight: bold;
-            font-family: 'Cinzel', serif;
-            border-radius: 0.25rem;
+        /* КЛАСС ДЛЯ СКРЫТИЯ МЕНЮ ПРИ ВВОДЕ ТЕКСТА */
+        body.keyboard-open .floating-menu {
             opacity: 0;
-            transition: opacity 0.2s;
             pointer-events: none;
-            white-space: nowrap;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateY(150%); /* Уезжает вниз */
         }
 
-        /* Разделитель */
-        .menu-divider {
-            width: 1px;
-            background-color: #d6d3d1;
-            margin: 0 0.25rem;
+        .menu-btn {
+            flex: 1; display: flex; justify-content: center; align-items: center;
+            padding: 0.75rem; border-radius: 0.75rem; transition: all 0.2s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); position: relative; color: white;
         }
+        .menu-btn:active { transform: scale(0.95); }
+        .btn-print { background-color: #1c1917; }
+        .btn-save { background-color: #059669; }
+        .btn-load { background-color: #2563eb; }
+        .btn-text { background-color: #d97706; }
+        .btn-reset { background-color: white; border: 1px solid #e7e5e4; color: #a8a29e !important; }
+        .btn-reset:hover { color: #dc2626 !important; background-color: #fef2f2; }
+        
+        .menu-tooltip { display: none; position: absolute; right: 100%; top: 50%; transform: translateY(-50%); margin-right: 0.75rem; padding: 0.25rem 0.5rem; background-color: #1c1917; color: white; font-size: 0.75rem; font-weight: bold; font-family: 'Cinzel', serif; border-radius: 0.25rem; opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .menu-divider { width: 1px; background-color: #d6d3d1; margin: 0 0.25rem; }
 
-        /* --- АДАПТАЦИЯ ПОД ДЕСКТОП (min-width: 1025px) --- */
         @media (min-width: 1025px) {
-            .floating-menu {
-                /* Возвращаем в угол */
-                top: 1rem; 
-                right: 1rem; 
-                bottom: auto; 
-                left: auto;
-                
-                flex-direction: column;
-                width: auto;
-                border-radius: 0.75rem; /* rounded-xl */
-                padding: 0.5rem;
-            }
-
-            .menu-btn {
-                flex: none;
-                border-radius: 0.5rem; /* rounded-lg */
-            }
-
-            /* Показываем тултипы при наведении */
-            .menu-btn:hover .menu-tooltip {
-                display: block;
-                opacity: 1;
-            }
-            
-            .menu-divider {
-                width: 100%;
-                height: 1px;
-                margin: 0.25rem 0;
-            }
+            .floating-menu { top: 1rem; right: 1rem; bottom: auto; left: auto; flex-direction: column; width: auto; border-radius: 0.75rem; padding: 0.5rem; }
+            .menu-btn { flex: none; border-radius: 0.5rem; }
+            .menu-btn:hover .menu-tooltip { display: block; opacity: 1; }
+            .menu-divider { width: 100%; height: 1px; margin: 0.25rem 0; }
+            /* На ПК меню не скрываем при вводе */
+            body.keyboard-open .floating-menu { opacity: 1; pointer-events: auto; transform: none; }
         }
 
         .card-adder { width: var(--card-width); height: var(--card-height); border: 2px dashed #a8a29e; background: rgba(255,255,255,0.5); border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; color: #78716c; user-select: none; }
@@ -242,34 +168,14 @@
         <div id="cardsList" class="cards-list"></div>
     </div>
 
-    <!-- НОВАЯ ПАНЕЛЬ МЕНЮ -->
+    <!-- МЕНЮ (Скрывается при вводе текста) -->
     <div class="floating-menu">
-        <button onclick="printCards()" class="menu-btn btn-print">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-            <span class="menu-tooltip">Печать</span>
-        </button>
-        
-        <button onclick="saveJSON()" class="menu-btn btn-save">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-            <span class="menu-tooltip">Скачать</span>
-        </button>
-        
-        <button onclick="loadJSONFile()" class="menu-btn btn-load">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-            <span class="menu-tooltip">Файл</span>
-        </button>
-        
-        <button onclick="openJsonModal()" class="menu-btn btn-text">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
-            <span class="menu-tooltip">Текст</span>
-        </button>
-        
+        <button onclick="printCards()" class="menu-btn btn-print"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg><span class="menu-tooltip">Печать</span></button>
+        <button onclick="saveJSON()" class="menu-btn btn-save"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg><span class="menu-tooltip">Скачать</span></button>
+        <button onclick="loadJSONFile()" class="menu-btn btn-load"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg><span class="menu-tooltip">Файл</span></button>
+        <button onclick="openJsonModal()" class="menu-btn btn-text"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg><span class="menu-tooltip">Текст</span></button>
         <div class="menu-divider"></div>
-        
-        <button onclick="clearAll()" class="menu-btn btn-reset">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-            <span class="menu-tooltip">Сброс</span>
-        </button>
+        <button onclick="clearAll()" class="menu-btn btn-reset"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg><span class="menu-tooltip">Сброс</span></button>
     </div>
 
     <div id="modalBackdrop" class="hidden fixed inset-0 bg-stone-900/50 backdrop-blur-sm z-40"></div>
@@ -357,6 +263,10 @@
                         isSwitchingFocus = true; 
                         const wrapper=cardEl.closest('.card-wrapper');
                         if(wrapper){document.querySelectorAll('.card-wrapper').forEach(el=>el.classList.remove('active')); wrapper.classList.add('active');}
+                        
+                        // --- СКРЫВАЕМ МЕНЮ (ДОБАВЛЯЕМ КЛАСС) СРАЗУ ---
+                        document.body.classList.add('keyboard-open');
+
                         if(window.innerWidth <= 1024) {
                             setTimeout(()=>{
                                 if(wrapper) {
@@ -372,7 +282,10 @@
                         isSwitchingFocus = false; 
                         setTimeout(() => {
                             if (!isSwitchingFocus) {
+                                // --- ПОКАЗЫВАЕМ МЕНЮ (УДАЛЯЕМ КЛАСС) ---
+                                document.body.classList.remove('keyboard-open');
                                 deactivateAllCards(); 
+                                
                                 if(window.innerWidth <= 1024) {
                                     const addBtn = document.querySelector('.card-adder');
                                     if(addBtn) {
